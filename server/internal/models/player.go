@@ -1,0 +1,59 @@
+package models
+
+import (
+	"time"
+	"gorm.io/gorm"
+)
+
+// Player는 게임 플레이어 정보를 나타냅니다
+type Player struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	Username    string    `gorm:"uniqueIndex;not null;size:50" json:"username"`
+	Password    string    `gorm:"not null" json:"-"` // JSON 응답에서 제외
+	Level       int       `gorm:"default:1;index" json:"level"`
+	Experience  int64     `gorm:"default:0" json:"experience"`
+	Gold        int64     `gorm:"default:0;index" json:"gold"`
+	MaxDistance float64   `gorm:"default:0" json:"max_distance"`
+	TotalKills  int       `gorm:"default:0" json:"total_kills"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+
+	// 관계
+	Weapons         []Weapon    `gorm:"foreignKey:PlayerID" json:"weapons,omitempty"`
+	CurrentWeaponID *uint       `json:"current_weapon_id,omitempty"`
+	CurrentWeapon   *Weapon     `gorm:"foreignKey:CurrentWeaponID" json:"current_weapon,omitempty"`
+}
+
+// TableName은 GORM이 사용할 테이블 이름을 지정합니다
+func (Player) TableName() string {
+	return "players"
+}
+
+// BeforeCreate는 생성 전 훅입니다 (JPA의 @PrePersist와 유사)
+func (p *Player) BeforeCreate(tx *gorm.DB) error {
+	if p.Level == 0 {
+		p.Level = 1
+	}
+	if p.Gold == 0 {
+		p.Gold = 0
+	}
+	return nil
+}
+
+// AddGold는 플레이어의 골드를 증가시킵니다
+func (p *Player) AddGold(amount int64) {
+	p.Gold += amount
+}
+
+// AddExperience는 플레이어의 경험치를 증가시키고 레벨업을 처리합니다
+func (p *Player) AddExperience(amount int64) {
+	p.Experience += amount
+	// 레벨업 로직 (예: 레벨당 100 경험치 필요)
+	requiredExp := int64(p.Level * 100)
+	for p.Experience >= requiredExp {
+		p.Experience -= requiredExp
+		p.Level++
+		requiredExp = int64(p.Level * 100)
+	}
+}
