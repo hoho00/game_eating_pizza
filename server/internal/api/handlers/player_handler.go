@@ -20,7 +20,17 @@ func NewPlayerHandler(playerService *services.PlayerService) *PlayerHandler {
 	}
 }
 
-// GetMe는 현재 로그인한 플레이어 정보를 조회합니다
+// GetMe 내 정보 조회
+// @Summary      내 정보 조회
+// @Description  현재 로그인한 플레이어의 정보를 조회합니다
+// @Tags         players
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200      {object}  models.Player  "플레이어 정보"
+// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Failure      404      {object}  map[string]interface{}  "플레이어를 찾을 수 없음"
+// @Router       /players/me [get]
 func (h *PlayerHandler) GetMe(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -50,7 +60,16 @@ func (h *PlayerHandler) GetMe(c *gin.Context) {
 	c.JSON(http.StatusOK, player)
 }
 
-// UpdateMe는 현재 로그인한 플레이어 정보를 업데이트합니다
+// UpdateMe 내 정보 수정
+// @Summary      내 정보 수정
+// @Description  현재 로그인한 플레이어의 정보를 수정합니다
+// @Tags         players
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200      {object}  map[string]interface{}  "수정 성공"
+// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Router       /players/me [put]
 func (h *PlayerHandler) UpdateMe(c *gin.Context) {
 	// TODO: 구현 필요
 	c.JSON(http.StatusNotImplemented, gin.H{
@@ -58,7 +77,17 @@ func (h *PlayerHandler) UpdateMe(c *gin.Context) {
 	})
 }
 
-// GetLeaderboard는 리더보드를 조회합니다
+// GetLeaderboard 리더보드 조회
+// @Summary      리더보드 조회
+// @Description  레벨이 높은 상위 플레이어 목록을 조회합니다
+// @Tags         players
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit   query     int  false  "조회할 플레이어 수 (기본값: 10)"
+// @Success      200     {object}  map[string]interface{}  "리더보드"
+// @Failure      500     {object}  map[string]interface{}  "서버 오류"
+// @Router       /players/leaderboard [get]
 func (h *PlayerHandler) GetLeaderboard(c *gin.Context) {
 	limitStr := c.DefaultQuery("limit", "10")
 	limit, err := strconv.Atoi(limitStr)

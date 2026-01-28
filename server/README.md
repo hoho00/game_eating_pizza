@@ -9,6 +9,7 @@
 - **ORM**: GORM
 - **데이터베이스**: PostgreSQL / MySQL
 - **인증**: JWT (구현 예정)
+- **API 문서**: Swagger (swaggo)
 
 ## 프로젝트 구조
 
@@ -34,8 +35,9 @@ server/
 ### 1. 사전 요구사항
 
 - Go 1.21 이상
-- PostgreSQL 또는 MySQL
+- PostgreSQL 또는 MySQL (또는 Mock DB 사용)
 - Git
+- Swagger CLI (선택사항, API 문서 생성용)
 
 ### 2. 환경 설정
 
@@ -76,6 +78,40 @@ go build -o bin/server cmd/server/main.go
 ```
 
 서버가 `http://localhost:8080`에서 실행됩니다.
+
+## Swagger API 문서
+
+### Swagger 문서 생성
+
+Swagger 문서를 생성하려면:
+
+1. **swag CLI 설치**:
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+2. **문서 생성**:
+```bash
+cd server
+swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+```
+
+또는 Makefile 사용:
+```bash
+make swagger
+```
+
+3. **서버 실행 후 접속**:
+```
+http://localhost:8080/swagger/index.html
+```
+
+### Swagger UI 사용
+
+- Swagger UI는 서버 실행 시 자동으로 `/swagger/*any` 경로에서 제공됩니다
+- 브라우저에서 `http://localhost:8080/swagger/index.html` 접속
+- API 엔드포인트를 직접 테스트할 수 있습니다
+- 인증이 필요한 API는 우측 상단의 "Authorize" 버튼을 클릭하여 토큰을 입력하세요
 
 ## API 엔드포인트
 
@@ -127,7 +163,7 @@ go test ./...
 
 - [ ] JWT 인증 구현
 - [ ] 비밀번호 해시 검증
-- [ ] API 문서화 (Swagger)
+- [x] API 문서화 (Swagger)
 - [ ] 단위 테스트 작성
 - [ ] 통합 테스트 작성
 - [ ] 로깅 시스템 개선

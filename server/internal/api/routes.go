@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // SetupRouter는 Gin 라우터를 설정하고 반환합니다
@@ -41,6 +43,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	playerHandler := handlers.NewPlayerHandler(playerService)
 	weaponHandler := handlers.NewWeaponHandler(weaponService)
 	dungeonHandler := handlers.NewDungeonHandler(dungeonService)
+
+	// Swagger 문서
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Health check
 	router.GET("/health", func(c *gin.Context) {

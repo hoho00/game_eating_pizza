@@ -20,7 +20,17 @@ func NewDungeonHandler(dungeonService *services.DungeonService) *DungeonHandler 
 	}
 }
 
-// GetDungeons는 던전 목록을 조회합니다
+// GetDungeons 던전 목록 조회
+// @Summary      던전 목록 조회
+// @Description  활성화된 던전 목록을 조회합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200      {object}  map[string]interface{}  "던전 목록"
+// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Failure      500      {object}  map[string]interface{}  "서버 오류"
+// @Router       /dungeons [get]
 func (h *DungeonHandler) GetDungeons(c *gin.Context) {
 	dungeons, err := h.dungeonService.GetActiveDungeons()
 	if err != nil {
@@ -35,7 +45,19 @@ func (h *DungeonHandler) GetDungeons(c *gin.Context) {
 	})
 }
 
-// GetDungeon는 특정 던전 정보를 조회합니다
+// GetDungeon 던전 상세 조회
+// @Summary      던전 상세 조회
+// @Description  특정 던전의 상세 정보를 조회합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int  true  "던전 ID"
+// @Success      200  {object}  models.Dungeon  "던전 정보"
+// @Failure      400  {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401  {object}  map[string]interface{}  "인증 실패"
+// @Failure      404  {object}  map[string]interface{}  "던전을 찾을 수 없음"
+// @Router       /dungeons/{id} [get]
 func (h *DungeonHandler) GetDungeon(c *gin.Context) {
 	dungeonIDStr := c.Param("id")
 	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
@@ -57,7 +79,19 @@ func (h *DungeonHandler) GetDungeon(c *gin.Context) {
 	c.JSON(http.StatusOK, dungeon)
 }
 
-// EnterDungeon는 던전에 입장합니다
+// EnterDungeon 던전 입장
+// @Summary      던전 입장
+// @Description  던전에 입장합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int  true  "던전 ID"
+// @Success      200  {object}  map[string]interface{}  "입장 성공"
+// @Failure      400  {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401  {object}  map[string]interface{}  "인증 실패"
+// @Failure      500  {object}  map[string]interface{}  "서버 오류"
+// @Router       /dungeons/{id}/enter [post]
 func (h *DungeonHandler) EnterDungeon(c *gin.Context) {
 	dungeonIDStr := c.Param("id")
 	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
@@ -98,7 +132,18 @@ func (h *DungeonHandler) EnterDungeon(c *gin.Context) {
 	})
 }
 
-// ClearDungeon는 던전을 클리어합니다
+// ClearDungeon 던전 클리어
+// @Summary      던전 클리어
+// @Description  던전을 클리어하고 보상을 획득합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int  true  "던전 ID"
+// @Success      200  {object}  map[string]interface{}  "클리어 성공"
+// @Failure      400  {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401  {object}  map[string]interface{}  "인증 실패"
+// @Router       /dungeons/{id}/clear [post]
 func (h *DungeonHandler) ClearDungeon(c *gin.Context) {
 	// TODO: 구현 필요
 	c.JSON(http.StatusNotImplemented, gin.H{

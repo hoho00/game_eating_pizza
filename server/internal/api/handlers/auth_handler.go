@@ -31,7 +31,17 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// Register는 회원가입을 처리합니다
+// Register 회원가입
+// @Summary      회원가입
+// @Description  새로운 플레이어를 등록합니다
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      RegisterRequest  true  "회원가입 정보"
+// @Success      201      {object}  map[string]interface{}  "회원가입 성공"
+// @Failure      400      {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      500      {object}  map[string]interface{}  "서버 오류"
+// @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -58,7 +68,17 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	})
 }
 
-// Login은 로그인을 처리합니다
+// Login 로그인
+// @Summary      로그인
+// @Description  플레이어 로그인을 처리하고 JWT 토큰을 반환합니다
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      LoginRequest  true  "로그인 정보"
+// @Success      200      {object}  map[string]interface{}  "로그인 성공"
+// @Failure      400      {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -85,7 +105,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	})
 }
 
-// RefreshToken은 토큰을 갱신합니다
+// RefreshToken 토큰 갱신
+// @Summary      토큰 갱신
+// @Description  JWT 토큰을 갱신합니다
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Success      200      {object}  map[string]interface{}  "토큰 갱신 성공"
+// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	// TODO: 토큰 갱신 로직 구현
 	c.JSON(http.StatusNotImplemented, gin.H{
