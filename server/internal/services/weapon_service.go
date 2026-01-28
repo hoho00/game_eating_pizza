@@ -8,14 +8,14 @@ import (
 
 // WeaponService는 무기 관련 비즈니스 로직을 담당합니다
 type WeaponService struct {
-	weaponRepo *repository.WeaponRepository
-	playerRepo *repository.PlayerRepository
+	weaponRepo repository.WeaponRepositoryInterface
+	playerRepo repository.PlayerRepositoryInterface
 }
 
 // NewWeaponService는 새로운 WeaponService 인스턴스를 생성합니다
 func NewWeaponService(
-	weaponRepo *repository.WeaponRepository,
-	playerRepo *repository.PlayerRepository,
+	weaponRepo repository.WeaponRepositoryInterface,
+	playerRepo repository.PlayerRepositoryInterface,
 ) *WeaponService {
 	return &WeaponService{
 		weaponRepo: weaponRepo,

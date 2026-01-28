@@ -6,9 +6,13 @@ import (
 )
 
 // PlayerRepository는 플레이어 데이터 접근을 담당합니다 (JPA Repository 패턴)
+// PlayerRepositoryInterface를 구현합니다
 type PlayerRepository struct {
 	db *gorm.DB
 }
+
+// PlayerRepository가 인터페이스를 구현하는지 컴파일 타임에 확인
+var _ PlayerRepositoryInterface = (*PlayerRepository)(nil)
 
 // NewPlayerRepository는 새로운 PlayerRepository 인스턴스를 생성합니다
 func NewPlayerRepository(db *gorm.DB) *PlayerRepository {

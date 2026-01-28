@@ -6,9 +6,13 @@ import (
 )
 
 // DungeonRepository는 던전 데이터 접근을 담당합니다
+// DungeonRepositoryInterface를 구현합니다
 type DungeonRepository struct {
 	db *gorm.DB
 }
+
+// DungeonRepository가 인터페이스를 구현하는지 컴파일 타임에 확인
+var _ DungeonRepositoryInterface = (*DungeonRepository)(nil)
 
 // NewDungeonRepository는 새로운 DungeonRepository 인스턴스를 생성합니다
 func NewDungeonRepository(db *gorm.DB) *DungeonRepository {

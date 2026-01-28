@@ -27,16 +27,14 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	router.Use(middleware.ErrorHandler())
 	router.Use(gin.Recovery())
 
-	// Repository 초기화
-	playerRepo := repository.NewPlayerRepository(db)
-	weaponRepo := repository.NewWeaponRepository(db)
-	dungeonRepo := repository.NewDungeonRepository(db)
+	// Repository 초기화 (Mock 또는 실제 DB)
+	repos := repository.NewRepositories(db, cfg)
 
 	// Service 초기화
-	authService := services.NewAuthService(playerRepo)
-	playerService := services.NewPlayerService(playerRepo, weaponRepo)
-	weaponService := services.NewWeaponService(weaponRepo, playerRepo)
-	dungeonService := services.NewDungeonService(dungeonRepo)
+	authService := services.NewAuthService(repos.Player)
+	playerService := services.NewPlayerService(repos.Player, repos.Weapon)
+	weaponService := services.NewWeaponService(repos.Weapon, repos.Player)
+	dungeonService := services.NewDungeonService(repos.Dungeon)
 
 	// Handler 초기화
 	authHandler := handlers.NewAuthHandler(authService)

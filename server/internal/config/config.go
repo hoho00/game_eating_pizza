@@ -29,6 +29,9 @@ type Config struct {
 
 	// CORS 설정
 	CORSAllowedOrigins []string
+
+	// Mock DB 사용 여부 (MVP 개발용)
+	UseMockDB bool
 }
 
 var AppConfig *Config
@@ -55,6 +58,8 @@ func LoadConfig() (*Config, error) {
 		JWTExpiration: getEnvAsInt("JWT_EXPIRATION", 24),
 
 		CORSAllowedOrigins: getEnvAsSlice("CORS_ALLOWED_ORIGINS", []string{"*"}),
+
+		UseMockDB: getEnvAsBool("USE_MOCK_DB", true), // 기본값: true (MVP 개발용)
 	}
 
 	AppConfig = config
@@ -106,4 +111,13 @@ func getEnvAsSlice(key string, defaultValue []string) []string {
 		return defaultValue
 	}
 	return result
+}
+
+// getEnvAsBool는 환경 변수를 불린으로 변환합니다
+func getEnvAsBool(key string, defaultValue bool) bool {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		return defaultValue
+	}
+	return valueStr == "true" || valueStr == "1" || valueStr == "yes"
 }

@@ -7,14 +7,14 @@ import (
 
 // PlayerService는 플레이어 관련 비즈니스 로직을 담당합니다
 type PlayerService struct {
-	playerRepo *repository.PlayerRepository
-	weaponRepo *repository.WeaponRepository
+	playerRepo repository.PlayerRepositoryInterface
+	weaponRepo repository.WeaponRepositoryInterface
 }
 
 // NewPlayerService는 새로운 PlayerService 인스턴스를 생성합니다
 func NewPlayerService(
-	playerRepo *repository.PlayerRepository,
-	weaponRepo *repository.WeaponRepository,
+	playerRepo repository.PlayerRepositoryInterface,
+	weaponRepo repository.WeaponRepositoryInterface,
 ) *PlayerService {
 	return &PlayerService{
 		playerRepo: playerRepo,

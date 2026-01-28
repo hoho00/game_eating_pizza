@@ -7,11 +7,11 @@ import (
 
 // DungeonService는 던전 관련 비즈니스 로직을 담당합니다
 type DungeonService struct {
-	dungeonRepo *repository.DungeonRepository
+	dungeonRepo repository.DungeonRepositoryInterface
 }
 
 // NewDungeonService는 새로운 DungeonService 인스턴스를 생성합니다
-func NewDungeonService(dungeonRepo *repository.DungeonRepository) *DungeonService {
+func NewDungeonService(dungeonRepo repository.DungeonRepositoryInterface) *DungeonService {
 	return &DungeonService{
 		dungeonRepo: dungeonRepo,
 	}

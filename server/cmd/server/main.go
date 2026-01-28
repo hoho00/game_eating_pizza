@@ -13,6 +13,7 @@ import (
 	"game_eating_pizza/internal/config"
 	"game_eating_pizza/internal/api"
 	"game_eating_pizza/pkg/database"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -22,14 +23,19 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// 데이터베이스 연결
-	db, err := database.Connect(cfg)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+	// 데이터베이스 연결 (Mock 사용 시에는 연결하지 않음)
+	var db *gorm.DB
+	if !cfg.UseMockDB {
+		var err error
+		db, err = database.Connect(cfg)
+		if err != nil {
+			log.Fatalf("Failed to connect to database: %v", err)
+		}
+		defer database.Close()
+		log.Println("Database connected successfully")
+	} else {
+		log.Println("Using Mock Database (MVP development mode)")
 	}
-	defer database.Close()
-
-	log.Println("Database connected successfully")
 
 	// 라우터 설정
 	router := api.SetupRouter(db, cfg)

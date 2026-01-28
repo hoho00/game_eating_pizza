@@ -6,9 +6,13 @@ import (
 )
 
 // WeaponRepository는 무기 데이터 접근을 담당합니다
+// WeaponRepositoryInterface를 구현합니다
 type WeaponRepository struct {
 	db *gorm.DB
 }
+
+// WeaponRepository가 인터페이스를 구현하는지 컴파일 타임에 확인
+var _ WeaponRepositoryInterface = (*WeaponRepository)(nil)
 
 // NewWeaponRepository는 새로운 WeaponRepository 인스턴스를 생성합니다
 func NewWeaponRepository(db *gorm.DB) *WeaponRepository {

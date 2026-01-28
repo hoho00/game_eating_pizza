@@ -9,11 +9,11 @@ import (
 
 // AuthService는 인증 관련 비즈니스 로직을 담당합니다
 type AuthService struct {
-	playerRepo *repository.PlayerRepository
+	playerRepo repository.PlayerRepositoryInterface
 }
 
 // NewAuthService는 새로운 AuthService 인스턴스를 생성합니다
-func NewAuthService(playerRepo *repository.PlayerRepository) *AuthService {
+func NewAuthService(playerRepo repository.PlayerRepositoryInterface) *AuthService {
 	return &AuthService{
 		playerRepo: playerRepo,
 	}
