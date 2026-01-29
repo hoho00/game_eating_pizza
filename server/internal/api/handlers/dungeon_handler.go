@@ -28,7 +28,7 @@ func NewDungeonHandler(dungeonService *services.DungeonService) *DungeonHandler 
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200      {object}  map[string][]dto.DungeonResponse  "던전 목록"
+// @Success      200      {object}  map[string]interface{}  "던전 목록"
 // @Failure      401      {object}  map[string]interface{}  "인증 실패"
 // @Failure      500      {object}  map[string]interface{}  "서버 오류"
 // @Router       /dungeons/all [get]
