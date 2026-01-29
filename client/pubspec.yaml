@@ -1,0 +1,39 @@
+name: game_eating_pizza_client
+description: 횡스크롤 방치형 게임 클라이언트 (Flutter Flame)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 게임 엔진
+  flame: ^1.15.0
+  
+  # 상태 관리
+  provider: ^6.1.1
+  
+  # 네트워크
+  dio: ^5.4.0
+  
+  # 로컬 저장소
+  shared_preferences: ^2.2.2
+  
+  # 유틸리티
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/audio/
+    - assets/data/
