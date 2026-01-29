@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/services"
 	"net/http"
 	"strconv"
@@ -20,19 +21,19 @@ func NewDungeonHandler(dungeonService *services.DungeonService) *DungeonHandler 
 	}
 }
 
-// GetDungeons 던전 목록 조회
-// @Summary      던전 목록 조회
-// @Description  활성화된 던전 목록을 조회합니다
+// GetAllDungeons 전체 던전 목록 조회
+// @Summary      전체 던전 목록 조회
+// @Description  전체 던전 목록을 조회합니다 (활성/비활성 포함)
 // @Tags         dungeons
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200      {object}  map[string]interface{}  "던전 목록"
+// @Success      200      {object}  map[string][]dto.DungeonResponse  "던전 목록"
 // @Failure      401      {object}  map[string]interface{}  "인증 실패"
 // @Failure      500      {object}  map[string]interface{}  "서버 오류"
-// @Router       /dungeons [get]
-func (h *DungeonHandler) GetDungeons(c *gin.Context) {
-	dungeons, err := h.dungeonService.GetActiveDungeons()
+// @Router       /dungeons/all [get]
+func (h *DungeonHandler) GetAllDungeons(c *gin.Context) {
+	dungeons, err := h.dungeonService.GetAllDungeons()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to get dungeons",
@@ -40,8 +41,65 @@ func (h *DungeonHandler) GetDungeons(c *gin.Context) {
 		return
 	}
 
+	// DTO로 변환
+	responses := make([]dto.DungeonResponse, len(dungeons))
+	for i, dungeon := range dungeons {
+		responses[i] = dto.DungeonResponse{
+			ID:         dungeon.ID,
+			Name:       dungeon.Name,
+			Type:       dungeon.Type,
+			Difficulty: dungeon.Difficulty,
+			IsActive:   dungeon.IsActive,
+			StartTime:  dungeon.StartTime,
+			EndTime:    dungeon.EndTime,
+			CreatedAt:  dungeon.CreatedAt,
+			UpdatedAt:  dungeon.UpdatedAt,
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"dungeons": dungeons,
+		"dungeons": responses,
+	})
+}
+
+// GetActiveDungeons 활성 던전 목록 조회
+// @Summary      활성 던전 목록 조회
+// @Description  활성화된 던전 목록만 조회합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200      {object}  map[string][]dto.DungeonResponse  "던전 목록"
+// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Failure      500      {object}  map[string]interface{}  "서버 오류"
+// @Router       /dungeons/active [get]
+func (h *DungeonHandler) GetActiveDungeons(c *gin.Context) {
+	dungeons, err := h.dungeonService.GetActiveDungeons()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get active dungeons",
+		})
+		return
+	}
+
+	// DTO로 변환
+	responses := make([]dto.DungeonResponse, len(dungeons))
+	for i, dungeon := range dungeons {
+		responses[i] = dto.DungeonResponse{
+			ID:         dungeon.ID,
+			Name:       dungeon.Name,
+			Type:       dungeon.Type,
+			Difficulty: dungeon.Difficulty,
+			IsActive:   dungeon.IsActive,
+			StartTime:  dungeon.StartTime,
+			EndTime:    dungeon.EndTime,
+			CreatedAt:  dungeon.CreatedAt,
+			UpdatedAt:  dungeon.UpdatedAt,
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"dungeons": responses,
 	})
 }
 
@@ -53,7 +111,7 @@ func (h *DungeonHandler) GetDungeons(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      int  true  "던전 ID"
-// @Success      200  {object}  models.Dungeon  "던전 정보"
+// @Success      200  {object}  dto.DungeonResponse  "던전 정보"
 // @Failure      400  {object}  map[string]interface{}  "잘못된 요청"
 // @Failure      401  {object}  map[string]interface{}  "인증 실패"
 // @Failure      404  {object}  map[string]interface{}  "던전을 찾을 수 없음"
@@ -76,7 +134,20 @@ func (h *DungeonHandler) GetDungeon(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dungeon)
+	// DTO로 변환
+	response := dto.DungeonResponse{
+		ID:         dungeon.ID,
+		Name:       dungeon.Name,
+		Type:       dungeon.Type,
+		Difficulty: dungeon.Difficulty,
+		IsActive:   dungeon.IsActive,
+		StartTime:  dungeon.StartTime,
+		EndTime:    dungeon.EndTime,
+		CreatedAt:  dungeon.CreatedAt,
+		UpdatedAt:  dungeon.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // EnterDungeon 던전 입장

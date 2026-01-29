@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/services"
 	"net/http"
 	"strconv"
@@ -27,7 +28,7 @@ func NewPlayerHandler(playerService *services.PlayerService) *PlayerHandler {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200      {object}  models.Player  "플레이어 정보"
+// @Success      200      {object}  dto.PlayerResponse  "플레이어 정보"
 // @Failure      401      {object}  map[string]interface{}  "인증 실패"
 // @Failure      404      {object}  map[string]interface{}  "플레이어를 찾을 수 없음"
 // @Router       /players/me [get]
@@ -57,7 +58,20 @@ func (h *PlayerHandler) GetMe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, player)
+	// DTO로 변환
+	response := dto.PlayerResponse{
+		ID:          player.ID,
+		Username:    player.Username,
+		Level:       player.Level,
+		Experience:  player.Experience,
+		Gold:        player.Gold,
+		MaxDistance: player.MaxDistance,
+		TotalKills:  player.TotalKills,
+		CreatedAt:   player.CreatedAt,
+		UpdatedAt:   player.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // UpdateMe 내 정보 수정

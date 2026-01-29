@@ -90,7 +90,8 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			// 던전 관련
 			dungeons := authenticated.Group("/dungeons")
 			{
-				dungeons.GET("", dungeonHandler.GetDungeons)
+				dungeons.GET("/all", dungeonHandler.GetAllDungeons)
+				dungeons.GET("/active", dungeonHandler.GetActiveDungeons)
 				dungeons.GET("/:id", dungeonHandler.GetDungeon)
 				dungeons.POST("/:id/enter", dungeonHandler.EnterDungeon)
 				dungeons.POST("/:id/clear", dungeonHandler.ClearDungeon)

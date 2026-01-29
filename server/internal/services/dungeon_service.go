@@ -22,6 +22,11 @@ func (s *DungeonService) GetDungeonByID(id uint) (*models.Dungeon, error) {
 	return s.dungeonRepo.FindByID(id)
 }
 
+// GetAllDungeons는 전체 던전 목록을 조회합니다
+func (s *DungeonService) GetAllDungeons() ([]models.Dungeon, error) {
+	return s.dungeonRepo.FindAll()
+}
+
 // GetActiveDungeons는 활성화된 던전 목록을 조회합니다
 func (s *DungeonService) GetActiveDungeons() ([]models.Dungeon, error) {
 	return s.dungeonRepo.FindActive()

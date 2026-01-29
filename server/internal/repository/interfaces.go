@@ -32,6 +32,7 @@ type WeaponRepositoryInterface interface {
 type DungeonRepositoryInterface interface {
 	Create(dungeon *models.Dungeon) error
 	FindByID(id uint) (*models.Dungeon, error)
+	FindAll() ([]models.Dungeon, error)
 	FindActive() ([]models.Dungeon, error)
 	Update(dungeon *models.Dungeon) error
 	Delete(id uint) error

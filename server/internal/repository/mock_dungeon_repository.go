@@ -79,6 +79,19 @@ func (r *MockDungeonRepository) FindByID(id uint) (*models.Dungeon, error) {
 	return &result, nil
 }
 
+// FindAll은 전체 던전 목록을 조회합니다
+func (r *MockDungeonRepository) FindAll() ([]models.Dungeon, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	dungeons := make([]models.Dungeon, 0, len(r.dungeons))
+	for _, dungeon := range r.dungeons {
+		dungeons = append(dungeons, *dungeon)
+	}
+
+	return dungeons, nil
+}
+
 // FindActive는 활성화된 던전 목록을 조회합니다
 func (r *MockDungeonRepository) FindActive() ([]models.Dungeon, error) {
 	r.mu.RLock()

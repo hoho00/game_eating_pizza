@@ -14,6 +14,8 @@ import (
 	"game_eating_pizza/internal/api"
 	"game_eating_pizza/pkg/database"
 	"gorm.io/gorm"
+
+	_ "game_eating_pizza/docs" // Swagger 문서를 위한 import
 )
 
 // @title           Game Eating Pizza API
@@ -35,7 +37,6 @@ import (
 // @in header
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
-func main() {
 
 func main() {
 	// 설정 로드

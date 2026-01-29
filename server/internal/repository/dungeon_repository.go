@@ -34,6 +34,13 @@ func (r *DungeonRepository) FindByID(id uint) (*models.Dungeon, error) {
 	return &dungeon, nil
 }
 
+// FindAll은 전체 던전 목록을 조회합니다
+func (r *DungeonRepository) FindAll() ([]models.Dungeon, error) {
+	var dungeons []models.Dungeon
+	err := r.db.Find(&dungeons).Error
+	return dungeons, err
+}
+
 // FindActive는 활성화된 던전 목록을 조회합니다
 func (r *DungeonRepository) FindActive() ([]models.Dungeon, error) {
 	var dungeons []models.Dungeon

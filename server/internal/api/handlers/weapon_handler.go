@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/services"
 	"net/http"
 	"strconv"
@@ -57,8 +58,25 @@ func (h *WeaponHandler) GetWeapons(c *gin.Context) {
 		return
 	}
 
+	// DTO로 변환
+	responses := make([]dto.WeaponResponse, len(weapons))
+	for i, weapon := range weapons {
+		responses[i] = dto.WeaponResponse{
+			ID:          weapon.ID,
+			PlayerID:    weapon.PlayerID,
+			Name:        weapon.Name,
+			Type:        weapon.Type,
+			AttackPower: weapon.AttackPower,
+			AttackSpeed: weapon.AttackSpeed,
+			Rarity:      weapon.Rarity,
+			Level:       weapon.Level,
+			CreatedAt:   weapon.CreatedAt,
+			UpdatedAt:   weapon.UpdatedAt,
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"weapons": weapons,
+		"weapons": responses,
 	})
 }
 
@@ -87,7 +105,7 @@ func (h *WeaponHandler) CreateWeapon(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      int  true  "무기 ID"
-// @Success      200  {object}  models.Weapon  "강화된 무기 정보"
+// @Success      200  {object}  dto.WeaponResponse  "강화된 무기 정보"
 // @Failure      400  {object}  map[string]interface{}  "잘못된 요청"
 // @Failure      401  {object}  map[string]interface{}  "인증 실패"
 // @Failure      500  {object}  map[string]interface{}  "서버 오류"
@@ -111,7 +129,21 @@ func (h *WeaponHandler) UpgradeWeapon(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, weapon)
+	// DTO로 변환
+	response := dto.WeaponResponse{
+		ID:          weapon.ID,
+		PlayerID:    weapon.PlayerID,
+		Name:        weapon.Name,
+		Type:        weapon.Type,
+		AttackPower: weapon.AttackPower,
+		AttackSpeed: weapon.AttackSpeed,
+		Rarity:      weapon.Rarity,
+		Level:       weapon.Level,
+		CreatedAt:   weapon.CreatedAt,
+		UpdatedAt:   weapon.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // EquipWeapon 무기 장착

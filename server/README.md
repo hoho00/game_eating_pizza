@@ -90,16 +90,29 @@ Swagger 문서를 생성하려면:
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
+**PATH 설정** (필요한 경우):
+```bash
+# ~/.zshrc 또는 ~/.bashrc에 추가
+export PATH=$PATH:$(go env GOPATH)/bin
+# 또는
+export PATH=$PATH:$HOME/go/bin
+
+# 적용
+source ~/.zshrc
+```
+
 2. **문서 생성**:
 ```bash
 cd server
 swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
 ```
 
-또는 Makefile 사용:
+또는 Makefile 사용 (자동 설치 포함):
 ```bash
 make swagger
 ```
+
+**문제 해결**: `command not found: swag` 에러가 발생하면 `SWAGGER_SETUP.md` 파일을 참고하세요.
 
 3. **서버 실행 후 접속**:
 ```
