@@ -30,8 +30,11 @@ type Config struct {
 	// CORS 설정
 	CORSAllowedOrigins []string
 
-	// Mock DB 사용 여부 (MVP 개발용)
-	UseMockDB bool
+	// Redis 설정 (캐싱, 세션, 실시간 데이터용)
+	RedisHost     string
+	RedisPort     string
+	RedisPassword string
+	RedisDB       int // Redis 데이터베이스 번호 (0-15)
 }
 
 var AppConfig *Config
@@ -59,7 +62,10 @@ func LoadConfig() (*Config, error) {
 
 		CORSAllowedOrigins: getEnvAsSlice("CORS_ALLOWED_ORIGINS", []string{"*"}),
 
-		UseMockDB: getEnvAsBool("USE_MOCK_DB", true), // 기본값: true (MVP 개발용)
+		RedisHost:     getEnv("REDIS_HOST", "localhost"),
+		RedisPort:     getEnv("REDIS_PORT", "6379"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""), // 비밀번호가 설정되어 있어야 합니다
+		RedisDB:       getEnvAsInt("REDIS_DB", 0),
 	}
 
 	AppConfig = config

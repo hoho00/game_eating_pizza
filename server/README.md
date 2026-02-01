@@ -1,15 +1,18 @@
-# Game Eating Pizza - Go Backend Server
+# Tiny Breakers - Go Backend Server
 
-횡스크롤 방치형 게임의 백엔드 서버입니다.
+Tiny Breakers: The Beating World의 백엔드 서버입니다.
+횡스크롤 방치형 게임으로, 걸음 수 연동 및 멀티플레이 레이드 기능을 지원합니다.
 
 ## 기술 스택
 
-- **언어**: Go 1.21+
+- **언어**: Go 1.23+
 - **웹 프레임워크**: Gin
 - **ORM**: GORM
 - **데이터베이스**: PostgreSQL / MySQL
+- **캐싱/세션**: Redis (Docker Compose로 관리)
 - **인증**: JWT (구현 예정)
 - **API 문서**: Swagger (swaggo)
+- **인프라**: Docker Compose
 
 ## 프로젝트 구조
 
@@ -34,8 +37,9 @@ server/
 
 ### 1. 사전 요구사항
 
-- Go 1.21 이상
-- PostgreSQL 또는 MySQL (또는 Mock DB 사용)
+- Go 1.23 이상
+- PostgreSQL 또는 MySQL (개발 서버에 구축된 DB 사용)
+- Redis (개발 서버에 구축된 Redis 사용)
 - Git
 - Swagger CLI (선택사항, API 문서 생성용)
 
@@ -45,8 +49,12 @@ server/
 # .env.example을 .env로 복사
 cp .env.example .env
 
-# .env 파일을 편집하여 데이터베이스 설정 수정
+# .env 파일을 편집하여 데이터베이스 및 Redis 설정 수정
 ```
+
+**필수 환경 변수**:
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_DRIVER` (데이터베이스 연결 정보)
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` (Redis 연결 정보)
 
 ### 3. 의존성 설치
 
@@ -54,16 +62,22 @@ cp .env.example .env
 go mod download
 ```
 
-### 4. 데이터베이스 설정
+### 4. 데이터베이스 및 Redis 설정
 
-PostgreSQL 예시:
+개발 서버에 이미 구축된 DB와 Redis를 사용합니다.
+
+`.env` 파일에 개발 서버의 DB와 Redis 연결 정보를 설정하세요:
 ```bash
-createdb game_db
-```
+DB_HOST=your_db_host
+DB_PORT=5432
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=tiny_breakers_db
+DB_DRIVER=postgres
 
-또는 MySQL:
-```sql
-CREATE DATABASE game_db;
+REDIS_HOST=your_redis_host
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
 ```
 
 ### 5. 서버 실행
@@ -78,6 +92,8 @@ go build -o bin/server cmd/server/main.go
 ```
 
 서버가 `http://localhost:8080`에서 실행됩니다.
+
+**참고**: 개발 서버에 구축된 DB와 Redis를 사용하므로, 로컬에서 Docker Compose를 실행할 필요가 없습니다. 로컬 개발 환경이 필요한 경우 `docker-compose.yml` 파일의 주석을 참고하세요.
 
 ## Swagger API 문서
 
@@ -172,11 +188,31 @@ database.AutoMigrate(db, &models.Player{}, &models.Weapon{}, &models.Dungeon{})
 go test ./...
 ```
 
+## 데이터 모델
+
+### 핵심 모델
+- **Player**: 플레이어 정보 (레벨, 경험치, 골드 등)
+- **Weapon**: 무기 정보 (공격력, 등급 등)
+- **Dungeon**: 던전 정보 (일반, 이벤트, 보스 던전)
+
+### Tiny Breakers 전용 모델
+- **UserActivity**: 사용자의 일일 활동 데이터 (걸음 수, 칼로리 등)
+  - 스토리: 주인공의 움직임이 대장간의 화로를 뜨겁게 만드는 연료
+  - 기능: 걸음 수에 따른 대장간 부스트 배율 계산
+- **RaidSession**: 멀티플레이 레이드 세션
+  - 스토리: 거대 수정 거인(World Boss)을 깨우기 위한 공명 레이드
+  - 기능: 여러 유저가 협력하여 보스 처치
+- **RaidParticipant**: 레이드 참여자 정보
+  - 기능: 각 유저의 데미지 기여도, 걸음 수 기여도 추적
+
 ## TODO
 
 - [ ] JWT 인증 구현
 - [ ] 비밀번호 해시 검증
 - [x] API 문서화 (Swagger)
+- [ ] 걸음 수 연동 API 구현 (UserActivity)
+- [ ] 레이드 시스템 API 구현 (RaidSession)
+- [ ] Redis 연동 (캐싱, 세션 관리)
 - [ ] 단위 테스트 작성
 - [ ] 통합 테스트 작성
 - [ ] 로깅 시스템 개선

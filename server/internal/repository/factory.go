@@ -12,19 +12,8 @@ type Repositories struct {
 	Dungeon DungeonRepositoryInterface
 }
 
-// NewRepositories는 설정에 따라 실제 또는 Mock Repository를 생성합니다
+// NewRepositories는 실제 데이터베이스 Repository를 생성합니다
 func NewRepositories(db *gorm.DB, cfg *config.Config) *Repositories {
-	useMock := cfg.UseMockDB
-
-	if useMock {
-		return &Repositories{
-			Player:  NewMockPlayerRepository(),
-			Weapon:  NewMockWeaponRepository(),
-			Dungeon: NewMockDungeonRepository(),
-		}
-	}
-
-	// 실제 데이터베이스 사용
 	return &Repositories{
 		Player:  NewPlayerRepository(db),
 		Weapon:  NewWeaponRepository(db),

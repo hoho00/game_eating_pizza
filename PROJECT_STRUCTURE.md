@@ -1,9 +1,9 @@
-# 프로젝트 구조 제안
+# 프로젝트 구조: Tiny Breakers
 
 ## 전체 프로젝트 구조
 
 ```
-game_eating_pizza/
+tiny_breakers/ (또는 game_eating_pizza/)
 ├── client/                    # Flutter Flame 클라이언트
 │   ├── lib/
 │   │   ├── main.dart
@@ -94,8 +94,9 @@ game_eating_pizza/
 │   │   └── logger/
 │   │       └── logger.go
 │   ├── migrations/                # DB 마이그레이션
-│   ├── docker-compose.yml
+│   ├── docker-compose.yml         # Redis, PostgreSQL 설정 (데이터 지속성 포함)
 │   ├── Dockerfile
+│   ├── .env.example               # 환경 변수 예시
 │   ├── go.mod
 │   ├── go.sum
 │   └── README.md

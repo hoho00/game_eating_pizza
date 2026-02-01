@@ -29,7 +29,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	router.Use(middleware.ErrorHandler())
 	router.Use(gin.Recovery())
 
-	// Repository 초기화 (Mock 또는 실제 DB)
+	// Repository 초기화
 	repos := repository.NewRepositories(db, cfg)
 
 	// Service 초기화

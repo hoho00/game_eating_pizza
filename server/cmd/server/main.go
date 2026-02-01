@@ -10,17 +10,16 @@ import (
 	"syscall"
 	"time"
 
-	"game_eating_pizza/internal/config"
 	"game_eating_pizza/internal/api"
+	"game_eating_pizza/internal/config"
 	"game_eating_pizza/pkg/database"
-	"gorm.io/gorm"
 
 	_ "game_eating_pizza/docs" // Swagger 문서를 위한 import
 )
 
-// @title           Game Eating Pizza API
+// @title           Tiny Breakers API
 // @version         1.0
-// @description     횡스크롤 방치형 게임 백엔드 API 서버
+// @description     Tiny Breakers: The Beating World - 횡스크롤 방치형 게임 백엔드 API 서버 (걸음 수 연동, 멀티플레이 레이드 지원)
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
@@ -45,19 +44,13 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// 데이터베이스 연결 (Mock 사용 시에는 연결하지 않음)
-	var db *gorm.DB
-	if !cfg.UseMockDB {
-		var err error
-		db, err = database.Connect(cfg)
-		if err != nil {
-			log.Fatalf("Failed to connect to database: %v", err)
-		}
-		defer database.Close()
-		log.Println("Database connected successfully")
-	} else {
-		log.Println("Using Mock Database (MVP development mode)")
+	// 데이터베이스 연결
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	defer database.Close()
+	log.Println("Database connected successfully")
 
 	// 라우터 설정
 	router := api.SetupRouter(db, cfg)
