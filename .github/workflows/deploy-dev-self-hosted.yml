@@ -1,0 +1,52 @@
+name: Deploy to Development Server (Self-hosted)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Dev Server
+    runs-on: self-hosted  # Self-hosted runner 사용
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Build game server binary
+        run: |
+          cd server
+          go mod download
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server ./cmd/server
+
+      - name: Build batch server binary
+        run: |
+          cd server
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server-batch ./cmd/batch
+        continue-on-error: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: |
+          pip install ansible
+
+      - name: Deploy to development server (localhost)
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
+        working-directory: ansible
+        run: |
+          # Self-hosted runner는 이미 개발 서버에서 실행 중이므로 localhost로 배포
+          ansible-playbook playbooks/deploy-localhost.yml -i inventory/localhost.yml
+        continue-on-error: false

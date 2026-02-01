@@ -1,0 +1,110 @@
+---
+# Tiny Breakers 배포 Playbook (Self-hosted runner용)
+# 개발 서버에서 직접 실행되므로 localhost로 배포
+- name: Deploy Tiny Breakers to Localhost
+  hosts: localhost
+  become: yes
+  gather_facts: yes
+  
+  vars:
+    go_binary_name: server
+    # 현재 작업 디렉토리에서 server 디렉토리로 이동
+    local_binary_dir: ../server
+    
+  tasks:
+    - name: Create game server directory
+      file:
+        path: "{{ game_server_path }}"
+        state: directory
+        owner: ki
+        group: ki
+        mode: '0755'
+
+    - name: Create batch server directory
+      file:
+        path: "{{ batch_server_path }}"
+        state: directory
+        owner: ki
+        group: ki
+        mode: '0755'
+
+    - name: Check if batch server binary exists locally
+      stat:
+        path: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
+      register: batch_binary_check
+
+    - name: Copy game server binary
+      copy:
+        src: "{{ local_binary_dir }}/{{ go_binary_name }}"
+        dest: "{{ game_server_path }}/{{ go_binary_name }}"
+        owner: ki
+        group: ki
+        mode: '0755'
+
+    - name: Copy batch server binary
+      copy:
+        src: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
+        dest: "{{ batch_server_path }}/{{ go_binary_name }}-batch"
+        owner: ki
+        group: ki
+        mode: '0755'
+      when: batch_binary_check.stat.exists
+      failed_when: false
+
+    - name: Copy .env file to game server (if exists)
+      copy:
+        src: "{{ local_binary_dir }}/.env"
+        dest: "{{ game_server_path }}/.env"
+        owner: ki
+        group: ki
+        mode: '0600'
+      when: item.stat.exists
+      loop:
+        - path: "{{ local_binary_dir }}/.env"
+      register: env_file_check
+      failed_when: false
+      changed_when: false
+
+    - name: Create systemd service file for game server
+      template:
+        src: game-server.service.j2
+        dest: /etc/systemd/system/tiny-breakers-game.service
+        mode: '0644'
+      vars:
+        service_user: ki
+        service_path: "{{ game_server_path }}"
+        binary_name: "{{ go_binary_name }}"
+      notify: reload systemd
+
+    - name: Create systemd service file for batch server
+      template:
+        src: batch-server.service.j2
+        dest: /etc/systemd/system/tiny-breakers-batch.service
+        mode: '0644'
+      vars:
+        service_user: ki
+        service_path: "{{ batch_server_path }}"
+        binary_name: "{{ go_binary_name }}-batch"
+      when: batch_binary_check.stat.exists
+      notify: reload systemd
+
+    - name: Restart game server
+      systemd:
+        name: tiny-breakers-game
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Restart batch server
+      systemd:
+        name: tiny-breakers-batch
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      when: batch_binary_check.stat.exists
+      failed_when: false
+
+  handlers:
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes

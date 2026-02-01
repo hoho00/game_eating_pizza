@@ -60,9 +60,48 @@ ansible-playbook playbooks/deploy.yml -i inventory/dev.yml
 
 ## 자동 배포 (GitHub Actions)
 
-`dev` 브랜치에 코드가 push되면 자동으로 배포됩니다.
+### 방법 1: Self-hosted Runner 사용 (권장) ⭐
+
+개발 서버에 GitHub Actions Self-hosted Runner를 설치하면 SSH 연결 문제를 해결할 수 있습니다.
+
+#### Self-hosted Runner 설치
+
+1. **GitHub Personal Access Token 생성**:
+   - GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - `repo` 권한 필요
+
+2. **개발 서버에서 Runner 설치**:
+```bash
+# 스크립트를 개발 서버로 전송
+scp ansible/scripts/setup-self-hosted-runner.sh ki@100.69.72.59:~/
+
+# 개발 서버에 SSH 접속
+ssh ki@100.69.72.59
+
+# 스크립트 실행
+chmod +x setup-self-hosted-runner.sh
+./setup-self-hosted-runner.sh
+```
+
+3. **워크플로우 파일 사용**:
+   - `.github/workflows/deploy-dev-self-hosted.yml` 사용
+   - 또는 기존 파일에서 `runs-on: ubuntu-latest` → `runs-on: self-hosted`로 변경
+
+#### 장점
+- ✅ SSH 연결 불필요
+- ✅ 방화벽 설정 불필요
+- ✅ 빠른 배포 (로컬 네트워크)
+
+### 방법 2: GitHub-hosted Runner 사용 (SSH 연결 필요)
+
+**주의**: 개발 서버의 방화벽에서 GitHub Actions IP를 허용해야 합니다.
 
 워크플로우 파일: `.github/workflows/deploy-dev.yml`
+
+**SSH 연결 문제 해결 방법**:
+1. 방화벽에서 포트 22(SSH) 허용
+2. GitHub Actions IP 범위 허용: https://api.github.com/meta (IP 주소 확인)
+3. 또는 SSH 포트 변경 (인벤토리 파일에서 `ansible_port` 설정)
 
 ## 서버 정보
 
@@ -106,9 +145,19 @@ sudo journalctl -u tiny-breakers-batch -f
 - 의존성 확인: `go mod download`
 
 ### 배포 실패
-- SSH 연결 확인
-- 서버 디스크 공간 확인
-- 권한 확인
+
+#### SSH 연결 타임아웃
+- **원인**: 개발 서버가 외부에서 접근 불가능 (방화벽, 보안 그룹)
+- **해결 방법**:
+  1. **Self-hosted Runner 사용** (권장): 위의 "방법 1" 참고
+  2. 방화벽에서 포트 22 허용
+  3. GitHub Actions IP 범위 허용
+  4. SSH 포트 확인 및 변경
+
+#### 기타 문제
+- SSH 연결 확인: `ssh ki@100.69.72.59`
+- 서버 디스크 공간 확인: `df -h`
+- 권한 확인: `ls -la ~/backend/`
 
 ### 서비스 시작 실패
 - 로그 확인: `journalctl -u tiny-breakers-game`
