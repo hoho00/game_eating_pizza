@@ -4,7 +4,7 @@ import 'managers/game_manager.dart';
 
 /// 메인 게임 클래스
 /// Flame의 Game 클래스를 상속하여 게임 로직을 관리합니다
-class GameEatingPizza extends FlameGame with HasGameRef {
+class GameEatingPizza extends FlameGame {
   late GameManager gameManager;
 
   @override
