@@ -1,0 +1,36 @@
+name: Deploy to Development Server
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    name: Deploy to Dev Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: |
+          pip install ansible
+
+      - name: Deploy to development server
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
+        run: |
+          cd ansible
+          ansible-playbook playbooks/deploy.yml -i inventory/dev.yml \
+            -e "repo_url=${{ github.server_url }}/${{ github.repository }}.git" \
+            -e "branch=${{ github.ref_name }}"
+        continue-on-error: false

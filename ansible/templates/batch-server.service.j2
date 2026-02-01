@@ -1,0 +1,21 @@
+[Unit]
+Description=Tiny Breakers Batch Server
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=simple
+User={{ service_user }}
+WorkingDirectory={{ service_path }}
+ExecStart={{ service_path }}/{{ binary_name }}
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tiny-breakers-batch
+
+# 환경 변수
+Environment="ENV=production"
+Environment="SERVER_MODE=batch"
+
+[Install]
+WantedBy=multi-user.target

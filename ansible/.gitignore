@@ -1,0 +1,8 @@
+# Ansible 관련 임시 파일
+*.retry
+.vault_pass
+*.log
+
+# 인벤토리 비밀번호 파일 (보안)
+inventory/*.vault
+inventory/*.secret

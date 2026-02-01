@@ -1,0 +1,15 @@
+---
+# 개발 서버 인벤토리
+all:
+  hosts:
+    dev-server:
+      ansible_host: 100.69.72.59
+      ansible_user: ki
+      ansible_password: 4939
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+      # 배포 경로
+      game_server_path: ~/backend/game-server
+      batch_server_path: ~/backend/batch-server
+      # Go 빌드 설정
+      go_version: "1.23"
+      build_arch: "linux/amd64"
