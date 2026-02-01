@@ -6,8 +6,8 @@ on:
       - dev
 
 jobs:
-  deploy:
-    name: Deploy to Dev Server
+  build-and-deploy:
+    name: Build and Deploy to Dev Server
     runs-on: ubuntu-latest
     
     steps:
@@ -15,6 +15,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Build game server binary
+        run: |
+          cd server
+          go mod download
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server ./cmd/server
+
+      - name: Build batch server binary
+        run: |
+          cd server
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server-batch ./cmd/batch
+        continue-on-error: true
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -28,9 +45,7 @@ jobs:
       - name: Deploy to development server
         env:
           ANSIBLE_HOST_KEY_CHECKING: False
+        working-directory: ansible
         run: |
-          cd ansible
-          ansible-playbook playbooks/deploy.yml -i inventory/dev.yml \
-            -e "repo_url=${{ github.server_url }}/${{ github.repository }}.git" \
-            -e "branch=${{ github.ref_name }}"
+          ansible-playbook playbooks/deploy.yml -i inventory/dev.yml
         continue-on-error: false

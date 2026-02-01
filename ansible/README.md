@@ -37,14 +37,26 @@ ansible/
 
 - Ansible 2.9 이상
 - Python 3.7 이상
+- Go 1.23 이상 (로컬 빌드용)
 - SSH 접근 권한 (개발 서버)
 
 ### 배포 실행
 
+1. **로컬에서 바이너리 빌드**:
+```bash
+cd server
+go mod download
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server ./cmd/server
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server-batch ./cmd/batch
+```
+
+2. **Ansible로 배포**:
 ```bash
 cd ansible
 ansible-playbook playbooks/deploy.yml -i inventory/dev.yml
 ```
+
+**참고**: 바이너리는 `server/` 디렉토리에 있어야 합니다.
 
 ## 자동 배포 (GitHub Actions)
 
@@ -62,10 +74,14 @@ ansible-playbook playbooks/deploy.yml -i inventory/dev.yml
 
 ## 배포 프로세스
 
-1. 코드 체크아웃
-2. Go 빌드 (게임 서버 + 배치 서버)
-3. 바이너리 복사
-4. systemd 서비스 재시작
+### GitHub Actions 자동 배포
+1. `dev` 브랜치에 push
+2. GitHub Actions에서 코드 체크아웃
+3. **GitHub Actions에서 Go 빌드** (게임 서버 + 배치 서버)
+4. Ansible을 통해 빌드된 바이너리를 개발 서버로 전송
+5. systemd 서비스 재시작
+
+**중요**: 개발 서버는 GitHub에 접근할 필요가 없습니다. 모든 빌드는 GitHub Actions에서 수행됩니다.
 
 ## 서비스 관리
 

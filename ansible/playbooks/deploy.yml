@@ -1,92 +1,19 @@
 ---
 # Tiny Breakers 배포 Playbook
 # dev 브랜치에 push되면 자동으로 실행됩니다
+# GitHub Actions에서 빌드한 바이너리를 개발 서버로 전송합니다
 - name: Deploy Tiny Breakers to Development Server
   hosts: dev-server
   become: yes
   gather_facts: yes
   
   vars:
-    project_name: tiny_breakers
-    repo_url: "{{ lookup('env', 'GITHUB_REPOSITORY_URL') | default('https://github.com/your-org/game_eating_pizza.git') }}"
-    branch: dev
-    source_dir: /tmp/{{ project_name }}-{{ ansible_date_time.epoch }}
     go_binary_name: server
+    # GitHub Actions에서 빌드된 바이너리 경로 (로컬)
+    # ansible 디렉토리에서 실행되므로 상대 경로는 ../server
+    local_binary_dir: ../server
     
   tasks:
-    - name: Check if Go is installed
-      command: go version
-      register: go_version_check
-      failed_when: false
-      changed_when: false
-      
-    - name: Install Go if not present
-      block:
-        - name: Download Go
-          get_url:
-            url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
-            dest: /tmp/go.tar.gz
-            mode: '0644'
-          when: go_version_check.rc != 0
-          
-        - name: Extract Go
-          unarchive:
-            src: /tmp/go.tar.gz
-            dest: /usr/local
-            remote_src: yes
-          when: go_version_check.rc != 0
-          
-        - name: Set Go environment variables
-          lineinfile:
-            path: /home/ki/.bashrc
-            line: "{{ item }}"
-            create: yes
-          loop:
-            - 'export PATH=$PATH:/usr/local/go/bin'
-            - 'export GOPATH=$HOME/go'
-            - 'export GOROOT=/usr/local/go'
-          when: go_version_check.rc != 0
-      when: go_version_check.rc != 0
-
-    - name: Create source directory
-      file:
-        path: "{{ source_dir }}"
-        state: directory
-        mode: '0755'
-
-    - name: Clone repository
-      git:
-        repo: "{{ repo_url }}"
-        version: "{{ branch }}"
-        dest: "{{ source_dir }}"
-        force: yes
-
-    - name: Build game server binary
-      command: >
-        cd {{ source_dir }}/server
-        go mod download
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o {{ go_binary_name }} ./cmd/server
-      environment:
-        GOPATH: /home/ki/go
-        PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"
-      register: build_result
-
-    - name: Check if batch server directory exists
-      stat:
-        path: "{{ source_dir }}/server/cmd/batch"
-      register: batch_dir_check
-
-    - name: Build batch server binary
-      command: >
-        cd {{ source_dir }}/server
-        go mod download
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o {{ go_binary_name }}-batch ./cmd/batch
-      environment:
-        GOPATH: /home/ki/go
-        PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"
-      when: batch_dir_check.stat.exists
-      register: batch_build_result
-      changed_when: false
 
     - name: Create game server directory
       file:
@@ -104,37 +31,39 @@
         group: ki
         mode: '0755'
 
-    - name: Copy game server binary
+    - name: Check if batch server binary exists locally
+      stat:
+        path: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
+      register: batch_binary_check
+
+    - name: Copy game server binary from GitHub Actions
       copy:
-        src: "{{ source_dir }}/server/{{ go_binary_name }}"
+        src: "{{ local_binary_dir }}/{{ go_binary_name }}"
         dest: "{{ game_server_path }}/{{ go_binary_name }}"
         owner: ki
         group: ki
         mode: '0755'
-        remote_src: yes
 
-    - name: Copy batch server binary
+    - name: Copy batch server binary from GitHub Actions
       copy:
-        src: "{{ source_dir }}/server/{{ go_binary_name }}-batch"
+        src: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
         dest: "{{ batch_server_path }}/{{ go_binary_name }}-batch"
         owner: ki
         group: ki
         mode: '0755'
-        remote_src: yes
-      when: batch_dir_check.stat.exists and batch_build_result.rc == 0
+      when: batch_binary_check.stat.exists
       failed_when: false
 
-    - name: Copy .env file to game server
+    - name: Copy .env file to game server (if exists)
       copy:
-        src: "{{ source_dir }}/server/.env"
+        src: "{{ local_binary_dir }}/.env"
         dest: "{{ game_server_path }}/.env"
         owner: ki
         group: ki
         mode: '0600'
-        remote_src: yes
       when: item.stat.exists
       loop:
-        - path: "{{ source_dir }}/server/.env"
+        - path: "{{ local_binary_dir }}/.env"
       register: env_file_check
       failed_when: false
       changed_when: false
@@ -159,7 +88,7 @@
         service_user: ki
         service_path: "{{ batch_server_path }}"
         binary_name: "{{ go_binary_name }}-batch"
-      when: batch_dir_check.stat.exists and batch_build_result.rc == 0
+      when: batch_binary_check.stat.exists
       notify: reload systemd
 
     - name: Restart game server
@@ -175,13 +104,8 @@
         state: restarted
         enabled: yes
         daemon_reload: yes
-      when: batch_dir_check.stat.exists and batch_build_result.rc == 0
+      when: batch_binary_check.stat.exists
       failed_when: false
-
-    - name: Clean up source directory
-      file:
-        path: "{{ source_dir }}"
-        state: absent
 
   handlers:
     - name: reload systemd
