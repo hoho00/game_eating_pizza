@@ -28,6 +28,9 @@ func main() {
 	}
 	defer database.Close()
 	log.Println("Database connected successfully")
+	
+	// db 변수는 배치 작업 구현 시 사용됩니다
+	_ = db
 
 	// 배치 작업 실행 컨텍스트
 	ctx, cancel := context.WithCancel(context.Background())
