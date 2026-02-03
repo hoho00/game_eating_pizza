@@ -1,0 +1,58 @@
+site_name: Tiny Breakers Documentation
+site_description: Tiny Breakers: The Beating World - 개발 문서
+site_author: Tiny Breakers Team
+site_url: http://{{ domain_name }}
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - 게임 기획서: GAME_DESIGN_DOCUMENT.md
+  - 일일 계획: DAILY_PLAN.md
+  - 향후 계획: FUTURE_PLANNING.md
+  - ORM 추천: ORM_RECOMMENDATION.md
+
+plugins:
+  - search
+  - minify:
+      minify_html: true

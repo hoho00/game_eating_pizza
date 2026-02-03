@@ -1,0 +1,56 @@
+---
+# 문서 자동 배포 Playbook
+- name: Deploy Documentation to Web Server
+  hosts: localhost
+  become: yes
+  gather_facts: yes
+  
+  vars:
+    obsidian_user: ki
+    obsidian_vault_path: /home/ki/obsidian-vault
+    docs_source_path: ../docs
+    docs_web_path: /var/www/docs
+    
+  tasks:
+    - name: Copy documentation files to Obsidian vault
+      copy:
+        src: "{{ item }}"
+        dest: "{{ obsidian_vault_path }}/{{ item | basename }}"
+        owner: "{{ obsidian_user }}"
+        group: "{{ obsidian_user }}"
+        mode: '0644'
+      loop:
+        - "{{ docs_source_path }}/GAME_DESIGN_DOCUMENT.md"
+        - "{{ docs_source_path }}/DAILY_PLAN.md"
+        - "{{ docs_source_path }}/FUTURE_PLANNING.md"
+        - "{{ docs_source_path }}/ORM_RECOMMENDATION.md"
+
+    - name: Create index.md from README
+      copy:
+        src: ../README.md
+        dest: "{{ obsidian_vault_path }}/index.md"
+        owner: "{{ obsidian_user }}"
+        group: "{{ obsidian_user }}"
+        mode: '0644'
+      failed_when: false
+
+    - name: Build MkDocs site
+      command: >
+        cd {{ obsidian_vault_path }}
+        mkdocs build --site-dir {{ docs_web_path }}
+      become_user: "{{ obsidian_user }}"
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+
+    - name: Set proper permissions for web directory
+      file:
+        path: "{{ docs_web_path }}"
+        owner: "{{ obsidian_user }}"
+        group: www-data
+        mode: '0755'
+        recurse: yes
+
+    - name: Reload Nginx
+      systemd:
+        name: nginx
+        state: reloaded

@@ -1,0 +1,31 @@
+server {
+    listen 80;
+    server_name {{ domain_name }};
+    
+    # 로그 설정
+    access_log /var/log/nginx/docs-access.log;
+    error_log /var/log/nginx/docs-error.log;
+
+    # 문서 루트
+    root {{ docs_web_path }};
+    index index.html;
+
+    # 모바일 최적화
+    client_max_body_size 10M;
+    
+    # 캐싱 설정
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # 메인 위치
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # 보안 헤더
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+}

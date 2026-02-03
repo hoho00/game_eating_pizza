@@ -57,6 +57,12 @@ go run cmd/server/main.go
 
 ## 문서
 
+### 온라인 문서 (모바일 접근 가능)
+- **웹 문서**: http://100.69.72.59
+- `docs/` 폴더의 문서가 자동으로 웹에 배포됩니다
+- 모바일에서도 최적화된 반응형 디자인으로 읽을 수 있습니다
+
+### 로컬 문서
 - [게임 기획서](./docs/GAME_DESIGN_DOCUMENT.md)
 - [향후 기획 방향성](./docs/FUTURE_PLANNING.md)
 - [프로젝트 구조](./PROJECT_STRUCTURE.md)

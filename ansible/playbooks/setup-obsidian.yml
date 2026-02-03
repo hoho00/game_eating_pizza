@@ -1,0 +1,106 @@
+---
+# Obsidian 환경 설정 및 웹 서버 구성 Playbook
+- name: Setup Obsidian and Web Server for Documentation
+  hosts: localhost
+  become: yes
+  gather_facts: yes
+  
+  vars:
+    obsidian_user: ki
+    obsidian_home: /home/ki
+    obsidian_vault_path: "{{ obsidian_home }}/obsidian-vault"
+    docs_web_path: /var/www/docs
+    domain_name: "{{ ansible_default_ipv4.address }}"  # 서버 IP 사용
+    
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - nginx
+          - python3
+          - python3-pip
+          - git
+          - curl
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install MkDocs and plugins
+      pip:
+        name:
+          - mkdocs
+          - mkdocs-material
+          - mkdocs-obsidian
+        state: present
+        executable: pip3
+
+    - name: Create Obsidian vault directory
+      file:
+        path: "{{ obsidian_vault_path }}"
+        state: directory
+        owner: "{{ obsidian_user }}"
+        group: "{{ obsidian_user }}"
+        mode: '0755'
+
+    - name: Create docs web directory
+      file:
+        path: "{{ docs_web_path }}"
+        state: directory
+        owner: "{{ obsidian_user }}"
+        group: www-data
+        mode: '0755'
+
+    - name: Create MkDocs configuration
+      template:
+        src: mkdocs.yml.j2
+        dest: "{{ obsidian_vault_path }}/mkdocs.yml"
+        owner: "{{ obsidian_user }}"
+        group: "{{ obsidian_user }}"
+        mode: '0644'
+
+    - name: Create Nginx configuration for docs
+      template:
+        src: nginx-docs.conf.j2
+        dest: /etc/nginx/sites-available/docs
+        mode: '0644'
+      notify: restart nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/docs
+        dest: /etc/nginx/sites-enabled/docs
+        state: link
+      notify: restart nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: restart nginx
+
+    - name: Test Nginx configuration
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Allow HTTP and HTTPS in firewall
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "80"
+        - "443"
+      when: ansible_os_family == "Debian"
+
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
