@@ -27,6 +27,9 @@ type Config struct {
 	JWTSecret     string
 	JWTExpiration int // 시간 (시간 단위)
 
+	// 인증 설정
+	SkipAuth bool // 개발 환경에서 JWT 검증 스킵 여부
+
 	// CORS 설정
 	CORSAllowedOrigins []string
 
@@ -59,6 +62,9 @@ func LoadConfig() (*Config, error) {
 
 		JWTSecret:     getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
 		JWTExpiration: getEnvAsInt("JWT_EXPIRATION", 24),
+
+		// 개발 환경에서는 기본적으로 인증 스킵, SKIP_AUTH=false로 설정하면 강제 인증
+		SkipAuth: getEnvAsBool("SKIP_AUTH", true),
 
 		CORSAllowedOrigins: getEnvAsSlice("CORS_ALLOWED_ORIGINS", []string{"*"}),
 
