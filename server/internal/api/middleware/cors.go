@@ -21,10 +21,15 @@ func CORS(cfg *config.Config) gin.HandlerFunc {
 		}
 
 		if allowed {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			// Origin이 있으면 해당 Origin 반환 (credentials 사용 가능). 없으면 "*" (Swagger 등 동일 출처 요청)
+			if origin != "" {
+				c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+				c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			} else {
+				c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			}
 		}
 
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 

@@ -138,7 +138,7 @@ http://localhost:8080/swagger/index.html
 ### Swagger UI 사용
 
 - Swagger UI는 서버 실행 시 자동으로 `/swagger/*any` 경로에서 제공됩니다
-- 브라우저에서 `http://localhost:8080/swagger/index.html` 접속
+- 브라우저에서 **반드시** `http://localhost:8080/swagger/index.html` 처럼 **http(s) 주소로** 접속하세요. (로컬 파일 `file://` 로 열면 "Failed to fetch" / CORS 오류가 납니다)
 - API 엔드포인트를 직접 테스트할 수 있습니다
 - 인증이 필요한 API는 우측 상단의 "Authorize" 버튼을 클릭하여 토큰을 입력하세요
 
