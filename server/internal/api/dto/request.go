@@ -1,6 +1,47 @@
 package dto
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
+
+// FlexTime은 JSON에서 여러 시간 형식을 허용하는 타입입니다 (RFC3339, "2006-01-02T15:04:05" 등).
+// T가 nil이면 omitempty로 생략된 값입니다.
+type FlexTime struct {
+	T *time.Time
+}
+
+// UnmarshalJSON은 "2006-01-02T15:04:05", "2006-01-02T15:04:05Z", RFC3339, "2006-01-02" 형식을 허용합니다.
+func (f *FlexTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" || s == "null" {
+		f.T = nil
+		return nil
+	}
+	layouts := []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05",
+		"2006-01-02",
+	}
+	for _, layout := range layouts {
+		if parsed, err := time.Parse(layout, s); err == nil {
+			f.T = &parsed
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid time format: %s (use e.g. 2006-01-02T15:04:05 or 2006-01-02T15:04:05Z)", s)
+}
+
+// MarshalJSON은 RFC3339로 직렬화합니다.
+func (f FlexTime) MarshalJSON() ([]byte, error) {
+	if f.T == nil {
+		return []byte("null"), nil
+	}
+	return f.T.MarshalJSON()
+}
 
 // ----- Auth -----
 
@@ -100,22 +141,22 @@ type EquipWeaponRequest struct {
 
 // CreateDungeonRequest는 던전 생성 요청 DTO입니다
 type CreateDungeonRequest struct {
-	Name       string     `json:"name" binding:"required" example:"초급 던전"`
-	Type       string     `json:"type" binding:"required" example:"normal"` // normal, event, boss
-	Difficulty int        `json:"difficulty" example:"1"`
-	IsActive   *bool      `json:"is_active,omitempty"` // omitempty면 기본 true
-	StartTime  *time.Time `json:"start_time,omitempty"`
-	EndTime    *time.Time `json:"end_time,omitempty"`
+	Name       string   `json:"name" binding:"required" example:"초급 던전"`
+	Type       string   `json:"type" binding:"required" example:"normal"` // normal, event, boss
+	Difficulty int      `json:"difficulty" example:"1"`
+	IsActive   *bool    `json:"is_active,omitempty"` // omitempty면 기본 true
+	StartTime  FlexTime `json:"start_time,omitempty"`
+	EndTime    FlexTime `json:"end_time,omitempty"`
 }
 
 // UpdateDungeonRequest는 던전 수정 요청 DTO입니다 (부분 수정)
 type UpdateDungeonRequest struct {
-	Name       *string    `json:"name,omitempty" example:"수정된 던전"`
-	Type       *string    `json:"type,omitempty" example:"event"`
-	Difficulty *int       `json:"difficulty,omitempty" example:"2"`
-	IsActive   *bool      `json:"is_active,omitempty" example:"true"`
-	StartTime  *time.Time `json:"start_time,omitempty"`
-	EndTime    *time.Time `json:"end_time,omitempty"`
+	Name       *string   `json:"name,omitempty" example:"수정된 던전"`
+	Type       *string   `json:"type,omitempty" example:"event"`
+	Difficulty *int      `json:"difficulty,omitempty" example:"2"`
+	IsActive   *bool     `json:"is_active,omitempty" example:"true"`
+	StartTime  *FlexTime `json:"start_time,omitempty"`
+	EndTime    *FlexTime `json:"end_time,omitempty"`
 }
 
 // DungeonIDPathRequest는 경로 파라미터 id를 바인딩합니다 (dungeons/:id)

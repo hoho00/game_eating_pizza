@@ -134,8 +134,8 @@ func (h *DungeonHandler) CreateDungeon(c *gin.Context) {
 		Type:       req.Type,
 		Difficulty: req.Difficulty,
 		IsActive:   isActive,
-		StartTime:  req.StartTime,
-		EndTime:    req.EndTime,
+		StartTime:  req.StartTime.T,
+		EndTime:    req.EndTime.T,
 	}
 	if err := h.dungeonService.CreateDungeon(dungeon); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create dungeon"})
@@ -203,10 +203,10 @@ func (h *DungeonHandler) UpdateDungeon(c *gin.Context) {
 		dungeon.IsActive = *bodyReq.IsActive
 	}
 	if bodyReq.StartTime != nil {
-		dungeon.StartTime = bodyReq.StartTime
+		dungeon.StartTime = bodyReq.StartTime.T
 	}
 	if bodyReq.EndTime != nil {
-		dungeon.EndTime = bodyReq.EndTime
+		dungeon.EndTime = bodyReq.EndTime.T
 	}
 
 	if err := h.dungeonService.UpdateDungeon(dungeon); err != nil {
