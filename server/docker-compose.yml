@@ -13,13 +13,13 @@ services:
     environment:
       - NODE_ENV=development
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-game_eating_pizza}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@game-db:5432/${DB_NAME:-game_eating_pizza}
     ports:
       - "8080:8080"
     volumes:
       - ./logs:/app/logs
     networks:
-      - tiny_breakers_network
+      - database_default
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
@@ -39,17 +39,17 @@ services:
     environment:
       - NODE_ENV=development
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-game_eating_pizza}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@game-db:5432/${DB_NAME:-game_eating_pizza}
     volumes:
       - ./logs:/app/logs
     networks:
-      - tiny_breakers_network
+      - database_default
 
 volumes: {}
 
 networks:
-  tiny_breakers_network:
-    driver: bridge
+  database_default:
+    external: true
 #       POSTGRES_DB: ${DB_NAME:-tiny_breakers_db}
 #     ports:
 #       - "5432:5432"
