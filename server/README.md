@@ -138,7 +138,7 @@ http://localhost:8080/swagger/index.html
 ### Swagger UI 사용
 
 - Swagger UI는 서버 실행 시 자동으로 `/swagger/*any` 경로에서 제공됩니다
-- 브라우저에서 **반드시** `http://localhost:8080/swagger/index.html` 처럼 **http(s) 주소로** 접속하세요. (로컬 파일 `file://` 로 열면 "Failed to fetch" / CORS 오류가 납니다)
+- 브라우저에서 **반드시** **http(s) 주소로** 접속하세요. 예: `http://localhost:8080/swagger/index.html`, Tailscale 사용 시 `http://<서버 tailscale 이름>.ts.net:8080/swagger/index.html` (로컬 파일 `file://` 이나 스펙의 host가 다른 주소로 고정돼 있으면 "Failed to fetch" / CORS 오류가 납니다. 현재는 host를 비워 두어 열린 페이지와 같은 호스트로 API가 호출됩니다.)
 - API 엔드포인트를 직접 테스트할 수 있습니다
 - 인증이 필요한 API는 우측 상단의 "Authorize" 버튼을 클릭하여 토큰을 입력하세요
 

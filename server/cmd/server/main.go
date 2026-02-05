@@ -29,8 +29,8 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      localhost:8080
 // @BasePath  /api/v1
+// host를 비우면 Swagger UI가 열린 페이지와 같은 호스트로 API 요청 (Tailscale 등 다른 도메인에서 써도 CORS 없음)
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
