@@ -86,6 +86,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			{
 				weapons.GET("", weaponHandler.GetWeapons)
 				weapons.POST("", weaponHandler.CreateWeapon)
+				weapons.GET("/:id", weaponHandler.GetWeapon)
+				weapons.PUT("/:id", weaponHandler.UpdateWeapon)
+				weapons.DELETE("/:id", weaponHandler.DeleteWeapon)
 				weapons.PUT("/:id/upgrade", weaponHandler.UpgradeWeapon)
 				weapons.PUT("/:id/equip", weaponHandler.EquipWeapon)
 			}

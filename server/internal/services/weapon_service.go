@@ -28,6 +28,47 @@ func (s *WeaponService) GetWeaponsByPlayerID(playerID uint) ([]models.Weapon, er
 	return s.weaponRepo.FindByPlayerID(playerID)
 }
 
+// GetWeaponByID는 ID로 무기를 조회합니다
+func (s *WeaponService) GetWeaponByID(id uint) (*models.Weapon, error) {
+	return s.weaponRepo.FindByID(id)
+}
+
+// CreateWeapon는 새 무기를 생성합니다
+func (s *WeaponService) CreateWeapon(playerID uint, name, weaponType string, attackPower int, attackSpeed float64, rarity string) (*models.Weapon, error) {
+	if attackPower <= 0 {
+		attackPower = 10
+	}
+	if attackSpeed <= 0 {
+		attackSpeed = 1.0
+	}
+	if rarity == "" {
+		rarity = "common"
+	}
+	weapon := &models.Weapon{
+		PlayerID:    playerID,
+		Name:        name,
+		Type:        weaponType,
+		AttackPower: attackPower,
+		AttackSpeed: attackSpeed,
+		Rarity:      rarity,
+		Level:       1,
+	}
+	if err := s.weaponRepo.Create(weapon); err != nil {
+		return nil, err
+	}
+	return weapon, nil
+}
+
+// UpdateWeapon는 무기 정보를 수정합니다
+func (s *WeaponService) UpdateWeapon(weapon *models.Weapon) error {
+	return s.weaponRepo.Update(weapon)
+}
+
+// DeleteWeapon는 무기를 삭제합니다
+func (s *WeaponService) DeleteWeapon(id uint) error {
+	return s.weaponRepo.Delete(id)
+}
+
 // UpgradeWeapon는 무기를 강화합니다
 func (s *WeaponService) UpgradeWeapon(weaponID uint) (*models.Weapon, error) {
 	weapon, err := s.weaponRepo.FindByID(weaponID)

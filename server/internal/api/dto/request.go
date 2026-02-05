@@ -74,6 +74,16 @@ type WeaponIDPathRequest struct {
 	ID uint `uri:"id" binding:"required"`
 }
 
+// UpdateWeaponRequest는 무기 수정 요청 DTO입니다 (부분 수정)
+type UpdateWeaponRequest struct {
+	Name        *string  `json:"name,omitempty"`
+	Type        *string  `json:"type,omitempty"`
+	AttackPower *int     `json:"attack_power,omitempty"`
+	AttackSpeed *float64 `json:"attack_speed,omitempty"`
+	Rarity      *string  `json:"rarity,omitempty"`
+	Level       *int     `json:"level,omitempty"`
+}
+
 // UpgradeWeaponRequest는 무기 강화 요청 DTO입니다
 type UpgradeWeaponRequest struct {
 	PlayerID uint // 인증 컨텍스트에서 설정
