@@ -66,6 +66,11 @@
       when: batch_binary_check.stat.exists
       failed_when: false
 
+    - name: Check if .env file exists
+      stat:
+        path: "{{ local_binary_dir }}/.env"
+      register: env_file_check
+
     - name: Copy .env file to game server (if exists)
       copy:
         src: "{{ local_binary_dir }}/.env"
@@ -73,9 +78,9 @@
         owner: ki
         group: ki
         mode: '0600'
+      when: env_file_check.stat.exists
       register: env_file_copy
-      failed_when: false
-      changed_when: env_file_copy is defined and env_file_copy.changed
+      changed_when: env_file_copy is changed
 
     - name: Create systemd service file for game server
       become: yes

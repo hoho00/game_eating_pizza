@@ -33,6 +33,16 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server-batch ./cmd/batch
         continue-on-error: true
 
+      - name: Copy .env file to server directory (if exists)
+        run: |
+          if [ -f .env ]; then
+            cp .env server/.env
+            echo "✓ .env file copied to server directory"
+          else
+            echo "⚠ .env file not found in repository root"
+          fi
+        continue-on-error: true
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
