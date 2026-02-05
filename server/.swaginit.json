@@ -1,12 +1,1 @@
-{
-  "dir": ".",
-  "generalInfo": {
-    "title": "Game Eating Pizza API",
-    "version": "1.0",
-    "description": "횡스크롤 방치형 게임 백엔드 API 서버"
-  },
-  "parseDependency": true,
-  "parseInternal": false,
-  "parseDepth": 1,
-  "output": "docs"
-}
+{"dir":".","generalInfo":{"title":"Game Eating Pizza API","version":"1.0","description":"횡스크롤 방치형 게임 백엔드 API 서버"},"parseDependency":true,"parseInternal":true,"parseDepth":1,"output":"docs"}

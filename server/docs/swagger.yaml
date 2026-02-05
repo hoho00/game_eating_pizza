@@ -1,5 +1,54 @@
 basePath: /api/v1
 definitions:
+  game_eating_pizza_internal_api_dto.CreateDungeonRequest:
+    properties:
+      difficulty:
+        example: 1
+        type: integer
+      end_time:
+        type: string
+      is_active:
+        description: omitempty면 기본 true
+        type: boolean
+      name:
+        example: 초급 던전
+        type: string
+      start_time:
+        type: string
+      type:
+        description: normal, event, boss
+        example: normal
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  game_eating_pizza_internal_api_dto.CreateWeaponRequest:
+    properties:
+      attack_power:
+        example: 10
+        type: integer
+      attack_speed:
+        example: 1
+        type: number
+      name:
+        example: Iron Sword
+        type: string
+      playerID:
+        description: 인증 컨텍스트에서 설정
+        type: integer
+      rarity:
+        description: common, rare, epic, legendary
+        example: common
+        type: string
+      type:
+        description: sword, bow, staff
+        example: sword
+        type: string
+    required:
+    - name
+    - type
+    type: object
   game_eating_pizza_internal_api_dto.DungeonResponse:
     properties:
       created_at:
@@ -21,6 +70,18 @@ definitions:
       updated_at:
         type: string
     type: object
+  game_eating_pizza_internal_api_dto.LoginRequest:
+    properties:
+      password:
+        example: secret123
+        type: string
+      username:
+        example: player1
+        type: string
+    required:
+    - password
+    - username
+    type: object
   game_eating_pizza_internal_api_dto.PlayerResponse:
     properties:
       created_at:
@@ -40,6 +101,84 @@ definitions:
       updated_at:
         type: string
       username:
+        type: string
+    type: object
+  game_eating_pizza_internal_api_dto.RefreshTokenRequest:
+    type: object
+  game_eating_pizza_internal_api_dto.RegisterRequest:
+    properties:
+      password:
+        example: secret123
+        minLength: 6
+        type: string
+      username:
+        example: player1
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  game_eating_pizza_internal_api_dto.UpdateDungeonRequest:
+    properties:
+      difficulty:
+        example: 2
+        type: integer
+      end_time:
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: 수정된 던전
+        type: string
+      start_time:
+        type: string
+      type:
+        example: event
+        type: string
+    type: object
+  game_eating_pizza_internal_api_dto.UpdateMeRequest:
+    properties:
+      experience:
+        example: 100
+        type: integer
+      gold:
+        example: 500
+        type: integer
+      level:
+        example: 2
+        type: integer
+      max_distance:
+        example: 150.5
+        type: number
+      playerID:
+        description: 인증 컨텍스트에서 설정
+        type: integer
+      total_kills:
+        example: 10
+        type: integer
+    type: object
+  game_eating_pizza_internal_api_dto.UpdateWeaponRequest:
+    properties:
+      attack_power:
+        example: 15
+        type: integer
+      attack_speed:
+        example: 1.2
+        type: number
+      level:
+        example: 2
+        type: integer
+      name:
+        example: Steel Sword
+        type: string
+      rarity:
+        example: rare
+        type: string
+      type:
+        example: sword
         type: string
     type: object
   game_eating_pizza_internal_api_dto.WeaponResponse:
@@ -65,41 +204,19 @@ definitions:
       updated_at:
         type: string
     type: object
-  internal_api_handlers.LoginRequest:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  internal_api_handlers.RegisterRequest:
-    properties:
-      password:
-        minLength: 6
-        type: string
-      username:
-        maxLength: 50
-        minLength: 3
-        type: string
-    required:
-    - password
-    - username
-    type: object
 host: localhost:8080
 info:
   contact:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: 횡스크롤 방치형 게임 백엔드 API 서버
+  description: 'Tiny Breakers: The Beating World - 횡스크롤 방치형 게임 백엔드 API 서버 (걸음 수 연동,
+    멀티플레이 레이드 지원)'
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Game Eating Pizza API
+  title: Tiny Breakers API
   version: "1.0"
 paths:
   /auth/login:
@@ -113,7 +230,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_api_handlers.LoginRequest'
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -140,6 +257,12 @@ paths:
       consumes:
       - application/json
       description: JWT 토큰을 갱신합니다
+      parameters:
+      - description: 토큰 갱신 (바디 없음)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.RefreshTokenRequest'
       produces:
       - application/json
       responses:
@@ -167,7 +290,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_api_handlers.RegisterRequest'
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -189,7 +312,86 @@ paths:
       summary: 회원가입
       tags:
       - auth
+  /dungeons:
+    post:
+      consumes:
+      - application/json
+      description: 새로운 던전을 생성합니다
+      parameters:
+      - description: 던전 생성 정보
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.CreateDungeonRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 생성된 던전 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.DungeonResponse'
+        "400":
+          description: 잘못된 요청
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 서버 오류
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 던전 생성
+      tags:
+      - dungeons
   /dungeons/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 던전을 삭제합니다
+      parameters:
+      - description: 던전 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: 잘못된 요청
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 던전을 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 서버 오류
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 던전 삭제
+      tags:
+      - dungeons
     get:
       consumes:
       - application/json
@@ -225,6 +427,54 @@ paths:
       security:
       - BearerAuth: []
       summary: 던전 상세 조회
+      tags:
+      - dungeons
+    put:
+      consumes:
+      - application/json
+      description: 던전 정보를 수정합니다
+      parameters:
+      - description: 던전 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 수정할 던전 정보
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.UpdateDungeonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 수정된 던전 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.DungeonResponse'
+        "400":
+          description: 잘못된 요청
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 던전을 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 서버 오류
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 던전 수정
       tags:
       - dungeons
   /dungeons/{id}/clear:
@@ -342,10 +592,7 @@ paths:
         "200":
           description: 던전 목록
           schema:
-            additionalProperties:
-              items:
-                $ref: '#/definitions/game_eating_pizza_internal_api_dto.DungeonResponse'
-              type: array
+            additionalProperties: true
             type: object
         "401":
           description: 인증 실패
@@ -362,6 +609,114 @@ paths:
       summary: 전체 던전 목록 조회
       tags:
       - dungeons
+  /players:
+    get:
+      consumes:
+      - application/json
+      description: 플레이어 목록을 페이지네이션으로 조회합니다
+      parameters:
+      - description: '조회 개수 (기본값: 10)'
+        in: query
+        name: limit
+        type: integer
+      - description: '건너뛸 개수 (기본값: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 플레이어 목록
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse'
+              type: array
+            type: object
+        "500":
+          description: 서버 오류
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 플레이어 목록 조회
+      tags:
+      - players
+  /players/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 본인 계정만 삭제할 수 있습니다 (소프트 삭제)
+      parameters:
+      - description: 플레이어 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: 잘못된 요청
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: 본인만 삭제 가능
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 플레이어를 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 플레이어 삭제
+      tags:
+      - players
+    get:
+      consumes:
+      - application/json
+      description: ID로 플레이어 정보를 조회합니다
+      parameters:
+      - description: 플레이어 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 플레이어 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 플레이어를 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 플레이어 상세 조회
+      tags:
+      - players
   /players/leaderboard:
     get:
       consumes:
@@ -378,7 +733,10 @@ paths:
         "200":
           description: 리더보드
           schema:
-            additionalProperties: true
+            additionalProperties:
+              items:
+                $ref: '#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse'
+              type: array
             type: object
         "500":
           description: 서버 오류
@@ -421,16 +779,26 @@ paths:
       consumes:
       - application/json
       description: 현재 로그인한 플레이어의 정보를 수정합니다
+      parameters:
+      - description: 수정할 정보
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.UpdateMeRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: 수정 성공
+          description: 수정된 플레이어 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse'
+        "401":
+          description: 인증 실패
           schema:
             additionalProperties: true
             type: object
-        "401":
-          description: 인증 실패
+        "404":
+          description: 플레이어를 찾을 수 없음
           schema:
             additionalProperties: true
             type: object
@@ -471,11 +839,22 @@ paths:
       consumes:
       - application/json
       description: 새로운 무기를 생성합니다
+      parameters:
+      - description: 무기 생성 정보
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.CreateWeaponRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: 무기 생성 성공
+          description: 생성된 무기 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.WeaponResponse'
+        "400":
+          description: 잘못된 요청
           schema:
             additionalProperties: true
             type: object
@@ -484,9 +863,135 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "500":
+          description: 서버 오류
+          schema:
+            additionalProperties: true
+            type: object
       security:
       - BearerAuth: []
       summary: 무기 생성
+      tags:
+      - weapons
+  /weapons/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 무기를 삭제합니다 (본인 소유만 가능)
+      parameters:
+      - description: 무기 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: 소유한 무기가 아님
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 무기를 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 무기 삭제
+      tags:
+      - weapons
+    get:
+      consumes:
+      - application/json
+      description: ID로 무기 정보를 조회합니다 (본인 소유만 가능)
+      parameters:
+      - description: 무기 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 무기 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.WeaponResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: 소유한 무기가 아님
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 무기를 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 무기 상세 조회
+      tags:
+      - weapons
+    put:
+      consumes:
+      - application/json
+      description: 무기 정보를 수정합니다 (본인 소유만 가능)
+      parameters:
+      - description: 무기 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 수정할 무기 정보
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/game_eating_pizza_internal_api_dto.UpdateWeaponRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 수정된 무기 정보
+          schema:
+            $ref: '#/definitions/game_eating_pizza_internal_api_dto.WeaponResponse'
+        "400":
+          description: 잘못된 요청
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: 소유한 무기가 아님
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 무기를 찾을 수 없음
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 무기 수정
       tags:
       - weapons
   /weapons/{id}/equip:

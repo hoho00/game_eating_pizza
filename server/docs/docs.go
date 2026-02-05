@@ -44,7 +44,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handlers.LoginRequest"
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.LoginRequest"
                         }
                     }
                 ],
@@ -86,6 +86,16 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "토큰 갱신",
+                "parameters": [
+                    {
+                        "description": "토큰 갱신 (바디 없음)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.RefreshTokenRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "토큰 갱신 성공",
@@ -124,7 +134,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handlers.RegisterRequest"
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.RegisterRequest"
                         }
                     }
                 ],
@@ -138,6 +148,66 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "잘못된 요청",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeons": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "새로운 던전을 생성합니다",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dungeons"
+                ],
+                "summary": "던전 생성",
+                "parameters": [
+                    {
+                        "description": "던전 생성 정보",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.CreateDungeonRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "생성된 던전 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.DungeonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -224,12 +294,7 @@ const docTemplate = `{
                         "description": "던전 목록",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/game_eating_pizza_internal_api_dto.DungeonResponse"
-                                }
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "401": {
@@ -299,6 +364,138 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "던전을 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "던전 정보를 수정합니다",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dungeons"
+                ],
+                "summary": "던전 수정",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "던전 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "수정할 던전 정보",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.UpdateDungeonRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "수정된 던전 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.DungeonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "던전을 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "던전을 삭제합니다",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dungeons"
+                ],
+                "summary": "던전 삭제",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "던전 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "던전을 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -418,6 +615,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/players": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "플레이어 목록을 페이지네이션으로 조회합니다",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "플레이어 목록 조회",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "조회 개수 (기본값: 10)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "건너뛸 개수 (기본값: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "플레이어 목록",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/players/leaderboard": {
             "get": {
                 "security": [
@@ -449,7 +701,12 @@ const docTemplate = `{
                         "description": "리더보드",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse"
+                                }
+                            }
                         }
                     },
                     "500": {
@@ -520,9 +777,122 @@ const docTemplate = `{
                     "players"
                 ],
                 "summary": "내 정보 수정",
+                "parameters": [
+                    {
+                        "description": "수정할 정보",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.UpdateMeRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "수정 성공",
+                        "description": "수정된 플레이어 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "플레이어를 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/players/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ID로 플레이어 정보를 조회합니다",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "플레이어 상세 조회",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "플레이어 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "플레이어 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.PlayerResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "플레이어를 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "본인 계정만 삭제할 수 있습니다 (소프트 삭제)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "플레이어 삭제",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "플레이어 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -530,6 +900,20 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "본인만 삭제 가능",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "플레이어를 찾을 수 없음",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -597,9 +981,26 @@ const docTemplate = `{
                     "weapons"
                 ],
                 "summary": "무기 생성",
+                "parameters": [
+                    {
+                        "description": "무기 생성 정보",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.CreateWeaponRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
-                        "description": "무기 생성 성공",
+                        "description": "생성된 무기 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.WeaponResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -607,6 +1008,196 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/weapons/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ID로 무기 정보를 조회합니다 (본인 소유만 가능)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "weapons"
+                ],
+                "summary": "무기 상세 조회",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "무기 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "무기 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.WeaponResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "소유한 무기가 아님",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "무기를 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "무기 정보를 수정합니다 (본인 소유만 가능)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "weapons"
+                ],
+                "summary": "무기 수정",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "무기 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "수정할 무기 정보",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.UpdateWeaponRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "수정된 무기 정보",
+                        "schema": {
+                            "$ref": "#/definitions/game_eating_pizza_internal_api_dto.WeaponResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "소유한 무기가 아님",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "무기를 찾을 수 없음",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "무기를 삭제합니다 (본인 소유만 가능)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "weapons"
+                ],
+                "summary": "무기 삭제",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "무기 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "소유한 무기가 아님",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "무기를 찾을 수 없음",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -734,6 +1325,73 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "game_eating_pizza_internal_api_dto.CreateDungeonRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "difficulty": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "description": "omitempty면 기본 true",
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "초급 던전"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "normal, event, boss",
+                    "type": "string",
+                    "example": "normal"
+                }
+            }
+        },
+        "game_eating_pizza_internal_api_dto.CreateWeaponRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "attack_power": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "attack_speed": {
+                    "type": "number",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Iron Sword"
+                },
+                "playerID": {
+                    "description": "인증 컨텍스트에서 설정",
+                    "type": "integer"
+                },
+                "rarity": {
+                    "description": "common, rare, epic, legendary",
+                    "type": "string",
+                    "example": "common"
+                },
+                "type": {
+                    "description": "sword, bow, staff",
+                    "type": "string",
+                    "example": "sword"
+                }
+            }
+        },
         "game_eating_pizza_internal_api_dto.DungeonResponse": {
             "type": "object",
             "properties": {
@@ -766,6 +1424,23 @@ const docTemplate = `{
                 }
             }
         },
+        "game_eating_pizza_internal_api_dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "secret123"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "player1"
+                }
+            }
+        },
         "game_eating_pizza_internal_api_dto.PlayerResponse": {
             "type": "object",
             "properties": {
@@ -795,6 +1470,114 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "game_eating_pizza_internal_api_dto.RefreshTokenRequest": {
+            "type": "object"
+        },
+        "game_eating_pizza_internal_api_dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "secret123"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3,
+                    "example": "player1"
+                }
+            }
+        },
+        "game_eating_pizza_internal_api_dto.UpdateDungeonRequest": {
+            "type": "object",
+            "properties": {
+                "difficulty": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "example": "수정된 던전"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "event"
+                }
+            }
+        },
+        "game_eating_pizza_internal_api_dto.UpdateMeRequest": {
+            "type": "object",
+            "properties": {
+                "experience": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "gold": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "level": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "max_distance": {
+                    "type": "number",
+                    "example": 150.5
+                },
+                "playerID": {
+                    "description": "인증 컨텍스트에서 설정",
+                    "type": "integer"
+                },
+                "total_kills": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "game_eating_pizza_internal_api_dto.UpdateWeaponRequest": {
+            "type": "object",
+            "properties": {
+                "attack_power": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "attack_speed": {
+                    "type": "number",
+                    "example": 1.2
+                },
+                "level": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Steel Sword"
+                },
+                "rarity": {
+                    "type": "string",
+                    "example": "rare"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "sword"
                 }
             }
         },
@@ -832,39 +1615,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "internal_api_handlers.LoginRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_api_handlers.RegisterRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                },
-                "username": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3
-                }
-            }
         }
     },
     "securityDefinitions": {
@@ -883,8 +1633,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Game Eating Pizza API",
-	Description:      "횡스크롤 방치형 게임 백엔드 API 서버",
+	Title:            "Tiny Breakers API",
+	Description:      "Tiny Breakers: The Beating World - 횡스크롤 방치형 게임 백엔드 API 서버 (걸음 수 연동, 멀티플레이 레이드 지원)",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

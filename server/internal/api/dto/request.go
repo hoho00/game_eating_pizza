@@ -6,14 +6,14 @@ import "time"
 
 // RegisterRequest는 회원가입 요청 DTO입니다
 type RegisterRequest struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,min=6"`
+	Username string `json:"username" binding:"required,min=3,max=50" example:"player1"`
+	Password string `json:"password" binding:"required,min=6" example:"secret123"`
 }
 
 // LoginRequest는 로그인 요청 DTO입니다
 type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" binding:"required" example:"player1"`
+	Password string `json:"password" binding:"required" example:"secret123"`
 }
 
 // RefreshTokenRequest는 토큰 갱신 요청 DTO입니다 (필요 시 바디 확장)
@@ -28,12 +28,12 @@ type GetMeRequest struct {
 
 // UpdateMeRequest는 내 정보 수정 요청 DTO입니다
 type UpdateMeRequest struct {
-	PlayerID   uint    // 인증 컨텍스트에서 설정
-	Level      *int    `json:"level,omitempty"`
-	Experience *int64  `json:"experience,omitempty"`
-	Gold       *int64  `json:"gold,omitempty"`
-	MaxDistance *float64 `json:"max_distance,omitempty"`
-	TotalKills  *int    `json:"total_kills,omitempty"`
+	PlayerID    uint     // 인증 컨텍스트에서 설정
+	Level       *int     `json:"level,omitempty" example:"2"`
+	Experience  *int64   `json:"experience,omitempty" example:"100"`
+	Gold        *int64   `json:"gold,omitempty" example:"500"`
+	MaxDistance *float64 `json:"max_distance,omitempty" example:"150.5"`
+	TotalKills  *int     `json:"total_kills,omitempty" example:"10"`
 }
 
 // GetLeaderboardRequest는 리더보드 조회 요청 DTO입니다
@@ -62,11 +62,11 @@ type GetWeaponsRequest struct {
 // CreateWeaponRequest는 무기 생성 요청 DTO입니다
 type CreateWeaponRequest struct {
 	PlayerID    uint    // 인증 컨텍스트에서 설정
-	Name        string  `json:"name" binding:"required"`
-	Type        string  `json:"type" binding:"required"` // sword, bow, staff
-	AttackPower int     `json:"attack_power"`
-	AttackSpeed float64 `json:"attack_speed"`
-	Rarity      string  `json:"rarity"` // common, rare, epic, legendary
+	Name        string  `json:"name" binding:"required" example:"Iron Sword"`
+	Type        string  `json:"type" binding:"required" example:"sword"` // sword, bow, staff
+	AttackPower int     `json:"attack_power" example:"10"`
+	AttackSpeed float64 `json:"attack_speed" example:"1.0"`
+	Rarity      string  `json:"rarity" example:"common"` // common, rare, epic, legendary
 }
 
 // WeaponIDPathRequest는 경로 파라미터 id를 바인딩합니다 (weapons/:id)
@@ -76,12 +76,12 @@ type WeaponIDPathRequest struct {
 
 // UpdateWeaponRequest는 무기 수정 요청 DTO입니다 (부분 수정)
 type UpdateWeaponRequest struct {
-	Name        *string  `json:"name,omitempty"`
-	Type        *string  `json:"type,omitempty"`
-	AttackPower *int     `json:"attack_power,omitempty"`
-	AttackSpeed *float64 `json:"attack_speed,omitempty"`
-	Rarity      *string  `json:"rarity,omitempty"`
-	Level       *int     `json:"level,omitempty"`
+	Name        *string  `json:"name,omitempty" example:"Steel Sword"`
+	Type        *string  `json:"type,omitempty" example:"sword"`
+	AttackPower *int     `json:"attack_power,omitempty" example:"15"`
+	AttackSpeed *float64 `json:"attack_speed,omitempty" example:"1.2"`
+	Rarity      *string  `json:"rarity,omitempty" example:"rare"`
+	Level       *int     `json:"level,omitempty" example:"2"`
 }
 
 // UpgradeWeaponRequest는 무기 강화 요청 DTO입니다
@@ -110,10 +110,10 @@ type CreateDungeonRequest struct {
 
 // UpdateDungeonRequest는 던전 수정 요청 DTO입니다 (부분 수정)
 type UpdateDungeonRequest struct {
-	Name       *string    `json:"name,omitempty"`
-	Type       *string    `json:"type,omitempty"` // normal, event, boss
-	Difficulty *int       `json:"difficulty,omitempty"`
-	IsActive   *bool      `json:"is_active,omitempty"`
+	Name       *string    `json:"name,omitempty" example:"수정된 던전"`
+	Type       *string    `json:"type,omitempty" example:"event"`
+	Difficulty *int       `json:"difficulty,omitempty" example:"2"`
+	IsActive   *bool      `json:"is_active,omitempty" example:"true"`
 	StartTime  *time.Time `json:"start_time,omitempty"`
 	EndTime    *time.Time `json:"end_time,omitempty"`
 }
