@@ -29,8 +29,7 @@ services:
     container_name: tiny-breakers-game-server
     restart: unless-stopped
     env_file:
-      # - .env.local
-      - .env.dev
+      - ~/.key/game_eating_pizza_server/.env.dev
     environment:
       - NODE_ENV=development
       - LOG_LEVEL=${LOG_LEVEL:-debug}
@@ -59,8 +58,7 @@ services:
     container_name: tiny-breakers-batch-server
     restart: unless-stopped
     env_file:
-      # - .env.local
-      - .env.dev
+      - ~/.key/game_eating_pizza_server/.env.dev
     environment:
       - NODE_ENV=development
       - LOG_LEVEL=${LOG_LEVEL:-debug}

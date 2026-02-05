@@ -141,15 +141,51 @@ docker compose -f /home/ki/src/game/server/docker-compose.yml up -d --build
 
 ## 📝 환경 변수 설정
 
-`.env` 파일이 server 디렉토리에 있어야 합니다:
+### 개발 서버 환경 변수 관리
+
+환경 변수는 보안을 위해 다음 위치에 관리됩니다:
 
 ```bash
-# /home/ki/src/game/.env (자동으로 server 디렉토리로 복사됨)
-DATABASE_URL=your_database_url
-REDIS_URL=your_redis_url
-JWT_SECRET=your_secret_key
-LOG_LEVEL=info
+~/.key/game_eating_pizza_server/.env.dev  # 개발 서버 관리 환경 변수
 ```
+
+**설정 방법:**
+
+1. 개발 서버에 디렉토리 생성:
+```bash
+mkdir -p ~/.key/game_eating_pizza_server
+```
+
+2. `.env.dev` 파일 생성 (기존 서버/.env.dev 복사):
+```bash
+# 로컬 개발 환경에서
+cp /home/ki/src/game/server/.env.dev ~/.key/game_eating_pizza_server/.env.dev
+```
+
+3. `.env.dev` 파일 내용 예시:
+```bash
+# Database
+DB_USER=game
+DB_PASSWORD=game
+DB_NAME=game
+DB_PORT=5432
+
+# Application
+LOG_LEVEL=debug
+NODE_ENV=development
+API_PORT=8080
+
+# Security (프로덕션에서는 변경 필수)
+JWT_SECRET=dev_jwt_secret_key
+API_KEY=dev_api_key
+DB_DRIVER=postgres
+DB_SSLMODE=disable
+```
+
+**주의사항:**
+- `~/.key/game_eating_pizza_server/` 디렉토리는 백업 관리 필요
+- 프로덕션 배포 시 보안 키 변경 필수
+- 리포지토리에는 포함되지 않으므로 `.gitignore` 대상 아님
 
 ## 🐛 문제 해결
 
@@ -173,6 +209,16 @@ docker images | grep tiny-breakers
 
 # 존재하는 컨테이너 확인
 docker ps -a | grep tiny-breakers
+```
+
+### env 파일을 찾을 수 없음
+```bash
+# ~/.key/game_eating_pizza_server/.env.dev 파일 존재 확인
+ls -la ~/.key/game_eating_pizza_server/
+
+# 파일이 없으면 생성
+mkdir -p ~/.key/game_eating_pizza_server
+cp /home/ki/src/game/server/.env.dev ~/.key/game_eating_pizza_server/.env.dev
 ```
 
 ### 포트 충돌
