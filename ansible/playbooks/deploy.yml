@@ -7,11 +7,25 @@
   
   vars:
     go_binary_name: server
-    # GitHub Actions에서 빌드된 바이너리 경로 (로컬)
-    # ansible 디렉토리에서 실행되므로 상대 경로는 ../server
-    local_binary_dir: ../server
+    # Playbook 디렉토리 기준으로 상대 경로 계산
+    # playbook_dir는 ansible/playbooks이므로 ../../server로 이동
+    local_binary_dir: "{{ playbook_dir }}/../../server"
     
   tasks:
+    - name: Print binary directory for debugging
+      debug:
+        msg: "Binary directory: {{ local_binary_dir }} (resolved to {{ local_binary_dir | expanduser | realpath }})"
+
+    - name: Check if game server binary exists
+      stat:
+        path: "{{ local_binary_dir }}/{{ go_binary_name }}"
+      register: game_binary_check
+      failed_when: not game_binary_check.stat.exists
+
+    - name: Check if batch server binary exists locally
+      stat:
+        path: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
+      register: batch_binary_check
 
     - name: Create game server directory
       file:
@@ -29,11 +43,6 @@
         group: ki
         mode: '0755'
 
-    - name: Check if batch server binary exists locally
-      stat:
-        path: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
-      register: batch_binary_check
-
     - name: Copy game server binary from GitHub Actions
       copy:
         src: "{{ local_binary_dir }}/{{ go_binary_name }}"
@@ -41,6 +50,7 @@
         owner: ki
         group: ki
         mode: '0755'
+      when: game_binary_check.stat.exists
 
     - name: Copy batch server binary from GitHub Actions
       copy:
@@ -59,12 +69,9 @@
         owner: ki
         group: ki
         mode: '0600'
-      when: item.stat.exists
-      loop:
-        - path: "{{ local_binary_dir }}/.env"
-      register: env_file_check
+      register: env_file_copy
       failed_when: false
-      changed_when: false
+      changed_when: env_file_copy is defined and env_file_copy.changed
 
     - name: Create systemd service file for game server
       become: yes
