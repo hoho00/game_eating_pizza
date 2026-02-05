@@ -1,14 +1,12 @@
 ---
-# Obsidian 환경 설정 및 웹 서버 구성 Playbook
-- name: Setup Obsidian and Web Server for Documentation
+# 웹 서버 구성 Playbook
+- name: Setup Web Server for Documentation
   hosts: localhost
   become: yes
   gather_facts: yes
   
   vars:
-    obsidian_user: ki
-    obsidian_home: /home/ki
-    obsidian_vault_path: "{{ obsidian_home }}/obsidian-vault"
+    docs_user: ki
     docs_web_path: /var/www/docs
     domain_name: "{{ ansible_default_ipv4.address }}"  # 서버 IP 사용
     
@@ -30,32 +28,23 @@
         name:
           - mkdocs
           - mkdocs-material
-          - mkdocs-obsidian
         state: present
         executable: pip3
-
-    - name: Create Obsidian vault directory
-      file:
-        path: "{{ obsidian_vault_path }}"
-        state: directory
-        owner: "{{ obsidian_user }}"
-        group: "{{ obsidian_user }}"
-        mode: '0755'
 
     - name: Create docs web directory
       file:
         path: "{{ docs_web_path }}"
         state: directory
-        owner: "{{ obsidian_user }}"
+        owner: "{{ docs_user }}"
         group: www-data
         mode: '0755'
 
     - name: Create MkDocs configuration
       template:
         src: mkdocs.yml.j2
-        dest: "{{ obsidian_vault_path }}/mkdocs.yml"
-        owner: "{{ obsidian_user }}"
-        group: "{{ obsidian_user }}"
+        dest: "{{ docs_web_path }}/mkdocs.yml"
+        owner: "{{ docs_user }}"
+        group: "{{ docs_user }}"
         mode: '0644'
 
     - name: Create Nginx configuration for docs
