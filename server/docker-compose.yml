@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   postgres:
@@ -29,7 +29,7 @@ services:
     container_name: tiny-breakers-game-server
     restart: unless-stopped
     env_file:
-      - .env.local
+      # - .env.local
       - .env.dev
     environment:
       - NODE_ENV=development
@@ -59,7 +59,7 @@ services:
     container_name: tiny-breakers-batch-server
     restart: unless-stopped
     env_file:
-      - .env.local
+      # - .env.local
       - .env.dev
     environment:
       - NODE_ENV=development
