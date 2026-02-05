@@ -32,6 +32,21 @@ func (s *DungeonService) GetActiveDungeons() ([]models.Dungeon, error) {
 	return s.dungeonRepo.FindActive()
 }
 
+// CreateDungeon는 새 던전을 생성합니다
+func (s *DungeonService) CreateDungeon(dungeon *models.Dungeon) error {
+	return s.dungeonRepo.Create(dungeon)
+}
+
+// UpdateDungeon는 던전 정보를 수정합니다
+func (s *DungeonService) UpdateDungeon(dungeon *models.Dungeon) error {
+	return s.dungeonRepo.Update(dungeon)
+}
+
+// DeleteDungeon는 던전을 삭제합니다
+func (s *DungeonService) DeleteDungeon(id uint) error {
+	return s.dungeonRepo.Delete(id)
+}
+
 // EnterDungeon는 던전에 입장합니다
 func (s *DungeonService) EnterDungeon(playerID, dungeonID uint) error {
 	// TODO: 던전 입장 로직 구현

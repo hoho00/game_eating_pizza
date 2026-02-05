@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"game_eating_pizza/internal/api/dto"
+	"game_eating_pizza/internal/models"
 	"game_eating_pizza/internal/services"
 	"net/http"
 	"strconv"
@@ -101,6 +102,166 @@ func (h *DungeonHandler) GetActiveDungeons(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"dungeons": responses,
 	})
+}
+
+// CreateDungeon 던전 생성
+// @Summary      던전 생성
+// @Description  새로운 던전을 생성합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      dto.CreateDungeonRequest  true  "던전 생성 정보"
+// @Success      201   {object}  dto.DungeonResponse  "생성된 던전 정보"
+// @Failure      400   {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401   {object}  map[string]interface{}  "인증 실패"
+// @Failure      500   {object}  map[string]interface{}  "서버 오류"
+// @Router       /dungeons [post]
+func (h *DungeonHandler) CreateDungeon(c *gin.Context) {
+	var req dto.CreateDungeonRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	dungeon := &models.Dungeon{
+		Name:       req.Name,
+		Type:       req.Type,
+		Difficulty: req.Difficulty,
+		IsActive:   isActive,
+		StartTime:  req.StartTime,
+		EndTime:    req.EndTime,
+	}
+	if err := h.dungeonService.CreateDungeon(dungeon); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create dungeon"})
+		return
+	}
+
+	response := dto.DungeonResponse{
+		ID:         dungeon.ID,
+		Name:       dungeon.Name,
+		Type:       dungeon.Type,
+		Difficulty: dungeon.Difficulty,
+		IsActive:   dungeon.IsActive,
+		StartTime:  dungeon.StartTime,
+		EndTime:    dungeon.EndTime,
+		CreatedAt:  dungeon.CreatedAt,
+		UpdatedAt:  dungeon.UpdatedAt,
+	}
+	c.JSON(http.StatusCreated, response)
+}
+
+// UpdateDungeon 던전 수정
+// @Summary      던전 수정
+// @Description  던전 정보를 수정합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      int  true  "던전 ID"
+// @Param        body  body      dto.UpdateDungeonRequest  true  "수정할 던전 정보"
+// @Success      200   {object}  dto.DungeonResponse  "수정된 던전 정보"
+// @Failure      400   {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401   {object}  map[string]interface{}  "인증 실패"
+// @Failure      404   {object}  map[string]interface{}  "던전을 찾을 수 없음"
+// @Failure      500   {object}  map[string]interface{}  "서버 오류"
+// @Router       /dungeons/{id} [put]
+func (h *DungeonHandler) UpdateDungeon(c *gin.Context) {
+	dungeonIDStr := c.Param("id")
+	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
+		return
+	}
+
+	dungeon, err := h.dungeonService.GetDungeonByID(uint(dungeonID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Dungeon not found"})
+		return
+	}
+
+	var req dto.UpdateDungeonRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	if req.Name != nil {
+		dungeon.Name = *req.Name
+	}
+	if req.Type != nil {
+		dungeon.Type = *req.Type
+	}
+	if req.Difficulty != nil {
+		dungeon.Difficulty = *req.Difficulty
+	}
+	if req.IsActive != nil {
+		dungeon.IsActive = *req.IsActive
+	}
+	if req.StartTime != nil {
+		dungeon.StartTime = req.StartTime
+	}
+	if req.EndTime != nil {
+		dungeon.EndTime = req.EndTime
+	}
+
+	if err := h.dungeonService.UpdateDungeon(dungeon); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update dungeon"})
+		return
+	}
+
+	response := dto.DungeonResponse{
+		ID:         dungeon.ID,
+		Name:       dungeon.Name,
+		Type:       dungeon.Type,
+		Difficulty: dungeon.Difficulty,
+		IsActive:   dungeon.IsActive,
+		StartTime:  dungeon.StartTime,
+		EndTime:    dungeon.EndTime,
+		CreatedAt:  dungeon.CreatedAt,
+		UpdatedAt:  dungeon.UpdatedAt,
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+// DeleteDungeon 던전 삭제
+// @Summary      던전 삭제
+// @Description  던전을 삭제합니다
+// @Tags         dungeons
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int  true  "던전 ID"
+// @Success      204  "No Content"
+// @Failure      400  {object}  map[string]interface{}  "잘못된 요청"
+// @Failure      401  {object}  map[string]interface{}  "인증 실패"
+// @Failure      404  {object}  map[string]interface{}  "던전을 찾을 수 없음"
+// @Failure      500  {object}  map[string]interface{}  "서버 오류"
+// @Router       /dungeons/{id} [delete]
+func (h *DungeonHandler) DeleteDungeon(c *gin.Context) {
+	dungeonIDStr := c.Param("id")
+	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
+		return
+	}
+
+	if _, err := h.dungeonService.GetDungeonByID(uint(dungeonID)); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Dungeon not found"})
+		return
+	}
+
+	if err := h.dungeonService.DeleteDungeon(uint(dungeonID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete dungeon"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 // GetDungeon 던전 상세 조회
