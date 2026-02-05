@@ -42,6 +42,13 @@ jobs:
         run: |
           pip install ansible
 
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 100.69.72.59 >> ~/.ssh/known_hosts 2>/dev/null || true
+
       - name: Deploy to development server
         env:
           ANSIBLE_HOST_KEY_CHECKING: False

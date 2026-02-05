@@ -6,7 +6,7 @@ set -e
 
 # .env 파일이 있으면 로드
 if [ -f "$(dirname "$0")/.env" ]; then
-    source "$(dirname "$0")/.env
+    source "$(dirname "$0")/.env"
 fi
 
 echo "GitHub Actions Self-hosted Runner 설치를 시작합니다..."
