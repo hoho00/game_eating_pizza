@@ -15,6 +15,10 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+# Install swag and generate Swagger docs (so deployed API docs are always up to date)
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN $(go env GOPATH)/bin/swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+
 # Build game server
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server ./cmd/server
 

@@ -26,6 +26,12 @@ jobs:
           cd server
           go mod download
 
+      - name: Generate Swagger docs
+        run: |
+          cd server
+          go install github.com/swaggo/swag/cmd/swag@latest
+          $(go env GOPATH)/bin/swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+
       - name: Copy .env file to server directory (if exists)
         run: |
           if [ -f .env ]; then
