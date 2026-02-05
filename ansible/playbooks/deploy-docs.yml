@@ -2,7 +2,6 @@
 # 문서 자동 배포 Playbook
 - name: Deploy Documentation to Web Server
   hosts: localhost
-  become: yes
   gather_facts: yes
   
   vars:
@@ -42,6 +41,7 @@
         PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
 
     - name: Set proper permissions for web directory
+      become: yes
       file:
         path: "{{ docs_web_path }}"
         owner: "{{ docs_user }}"
@@ -50,6 +50,7 @@
         recurse: yes
 
     - name: Reload Nginx
+      become: yes
       systemd:
         name: nginx
         state: reloaded

@@ -3,7 +3,6 @@
 # 개발 서버에서 직접 실행되므로 localhost로 배포
 - name: Deploy Tiny Breakers to Development Server
   hosts: localhost
-  become: yes
   gather_facts: yes
   
   vars:
@@ -68,6 +67,7 @@
       changed_when: false
 
     - name: Create systemd service file for game server
+      become: yes
       template:
         src: game-server.service.j2
         dest: /etc/systemd/system/tiny-breakers-game.service
@@ -79,6 +79,7 @@
       notify: reload systemd
 
     - name: Create systemd service file for batch server
+      become: yes
       template:
         src: batch-server.service.j2
         dest: /etc/systemd/system/tiny-breakers-batch.service
@@ -91,6 +92,7 @@
       notify: reload systemd
 
     - name: Restart game server
+      become: yes
       systemd:
         name: tiny-breakers-game
         state: restarted
@@ -98,6 +100,7 @@
         daemon_reload: yes
 
     - name: Restart batch server
+      become: yes
       systemd:
         name: tiny-breakers-batch
         state: restarted
@@ -108,5 +111,6 @@
 
   handlers:
     - name: reload systemd
+      become: yes
       systemd:
         daemon_reload: yes
