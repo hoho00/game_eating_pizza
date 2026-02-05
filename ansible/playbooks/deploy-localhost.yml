@@ -1,132 +1,116 @@
 ---
-# Tiny Breakers 배포 Playbook (Self-hosted runner용)
+# Tiny Breakers 배포 Playbook (Self-hosted runner용 - Docker)
 # 개발 서버에서 직접 실행되므로 localhost로 배포
-- name: Deploy Tiny Breakers to Localhost
+- name: Deploy Tiny Breakers to Localhost (Docker)
   hosts: localhost
   gather_facts: yes
   
   vars:
-    go_binary_name: server
-    # Playbook 디렉토리 기준으로 상대 경로 계산
-    # playbook_dir는 ansible/playbooks이므로 ../../server로 이동
-    local_binary_dir: "{{ playbook_dir }}/../../server"
+    app_name: tiny-breakers
+    docker_project_dir: "{{ playbook_dir }}/../../server"
+    docker_image_game: "{{ app_name }}-game:latest"
+    docker_image_batch: "{{ app_name }}-batch:latest"
+    docker_container_game: "{{ app_name }}-game-server"
+    docker_container_batch: "{{ app_name }}-batch-server"
     
   tasks:
-    - name: Print binary directory for debugging
+    - name: Print deployment information
       debug:
-        msg: "Binary directory: {{ local_binary_dir }} (resolved to {{ local_binary_dir | expanduser | realpath }})"
+        msg: |
+          Deploying {{ app_name }} with Docker
+          Project directory: {{ docker_project_dir }}
+          Game image: {{ docker_image_game }}
+          Batch image: {{ docker_image_batch }}
 
-    - name: Check if game server binary exists
+    - name: Check if docker-compose.yml exists
       stat:
-        path: "{{ local_binary_dir }}/{{ go_binary_name }}"
-      register: game_binary_check
-      failed_when: not game_binary_check.stat.exists
-      
-    - name: Check if batch server binary exists locally
-      stat:
-        path: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
-      register: batch_binary_check
-
-    - name: Create game server directory
-      file:
-        path: "{{ game_server_path }}"
-        state: directory
-        owner: ki
-        group: ki
-        mode: '0755'
-
-    - name: Create batch server directory
-      file:
-        path: "{{ batch_server_path }}"
-        state: directory
-        owner: ki
-        group: ki
-        mode: '0755'
-
-    - name: Copy game server binary
-      copy:
-        src: "{{ local_binary_dir }}/{{ go_binary_name }}"
-        dest: "{{ game_server_path }}/{{ go_binary_name }}"
-        owner: ki
-        group: ki
-        mode: '0755'
-      when: game_binary_check.stat.exists
-      register: game_binary_copy
-      failed_when: 
-        - game_binary_copy is failed
-        - game_binary_copy.msg is not defined or "could not find" not in game_binary_copy.msg | lower
-
-    - name: Copy batch server binary
-      copy:
-        src: "{{ local_binary_dir }}/{{ go_binary_name }}-batch"
-        dest: "{{ batch_server_path }}/{{ go_binary_name }}-batch"
-        owner: ki
-        group: ki
-        mode: '0755'
-      when: batch_binary_check.stat.exists
-      failed_when: false
+        path: "{{ docker_project_dir }}/docker-compose.yml"
+      register: docker_compose_check
+      failed_when: not docker_compose_check.stat.exists
 
     - name: Check if .env file exists
       stat:
-        path: "{{ local_binary_dir }}/.env"
+        path: "{{ docker_project_dir }}/.env"
       register: env_file_check
 
-    - name: Copy .env file to game server (if exists)
-      copy:
-        src: "{{ local_binary_dir }}/.env"
-        dest: "{{ game_server_path }}/.env"
-        owner: ki
-        group: ki
-        mode: '0600'
-      when: env_file_check.stat.exists
-      register: env_file_copy
-      changed_when: env_file_copy is changed
-
-    - name: Create systemd service file for game server
+    - name: Stop existing containers (if any)
       become: yes
-      template:
-        src: game-server.service.j2
-        dest: /etc/systemd/system/tiny-breakers-game.service
-        mode: '0644'
-      vars:
-        service_user: ki
-        service_path: "{{ game_server_path }}"
-        binary_name: "{{ go_binary_name }}"
-      notify: reload systemd
+      shell: |
+        cd {{ docker_project_dir }}
+        docker-compose down || true
+      changed_when: false
 
-    - name: Create systemd service file for batch server
+    - name: Build Docker images
       become: yes
-      template:
-        src: batch-server.service.j2
-        dest: /etc/systemd/system/tiny-breakers-batch.service
-        mode: '0644'
-      vars:
-        service_user: ki
-        service_path: "{{ batch_server_path }}"
-        binary_name: "{{ go_binary_name }}-batch"
-      when: batch_binary_check.stat.exists
-      notify: reload systemd
+      shell: |
+        cd {{ docker_project_dir }}
+        docker-compose build --no-cache
+      register: docker_build_result
 
-    - name: Restart game server
-      become: yes
-      systemd:
-        name: tiny-breakers-game
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
+    - name: Display build result
+      debug:
+        msg: "Docker build completed successfully"
+      when: docker_build_result is succeeded
 
-    - name: Restart batch server
+    - name: Start containers with docker-compose
       become: yes
-      systemd:
-        name: tiny-breakers-batch
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
-      when: batch_binary_check.stat.exists
+      shell: |
+        cd {{ docker_project_dir }}
+        docker-compose up -d
+      environment:
+        COMPOSE_FILE: "{{ docker_project_dir }}/docker-compose.yml"
+      register: docker_up_result
+
+    - name: Display docker-compose up result
+      debug:
+        msg: "Docker containers started successfully"
+      when: docker_up_result is succeeded
+
+    - name: Wait for game server to be ready
+      become: yes
+      shell: |
+        docker ps | grep {{ docker_container_game }} | grep healthy
+      retries: 10
+      delay: 5
+      register: health_check
+      until: health_check is succeeded
       failed_when: false
 
-  handlers:
-    - name: reload systemd
+    - name: Display running containers
       become: yes
-      systemd:
-        daemon_reload: yes
+      shell: |
+        docker ps --filter "name={{ app_name }}"
+      register: running_containers
+
+    - name: Show running containers
+      debug:
+        msg: "{{ running_containers.stdout_lines }}"
+
+    - name: Show container logs (last 20 lines)
+      become: yes
+      shell: |
+        echo "=== Game Server Logs ==="
+        docker logs --tail 20 {{ docker_container_game }} || echo "Game server not running"
+        echo ""
+        echo "=== Batch Server Logs ==="
+        docker logs --tail 20 {{ docker_container_batch }} || echo "Batch server not running"
+      register: container_logs
+
+    - name: Display logs
+      debug:
+        msg: "{{ container_logs.stdout }}"
+
+    - name: Deployment status
+      debug:
+        msg: |
+          ✅ Deployment completed!
+          
+          Container Status:
+          - Game Server: {{ docker_container_game }}
+          - Batch Server: {{ docker_container_batch }}
+          
+          Useful commands:
+          - View logs: docker logs -f {{ docker_container_game }}
+          - Stop containers: docker-compose -f {{ docker_project_dir }}/docker-compose.yml down
+          - Restart containers: docker-compose -f {{ docker_project_dir }}/docker-compose.yml restart
+          - View running containers: docker ps --filter "name={{ app_name }}"

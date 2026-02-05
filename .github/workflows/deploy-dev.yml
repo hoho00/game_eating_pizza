@@ -16,22 +16,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Go
+      - name: Setup Go (for go mod validation)
         uses: actions/setup-go@v4
         with:
           go-version: '1.23'
 
-      - name: Build game server binary
+      - name: Validate Go modules
         run: |
           cd server
           go mod download
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server ./cmd/server
-
-      - name: Build batch server binary
-        run: |
-          cd server
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server-batch ./cmd/batch
-        continue-on-error: true
 
       - name: Copy .env file to server directory (if exists)
         run: |
@@ -52,7 +45,7 @@ jobs:
         run: |
           pip install ansible
 
-      - name: Deploy to development server (localhost)
+      - name: Deploy to development server (Docker)
         env:
           ANSIBLE_HOST_KEY_CHECKING: False
         working-directory: ansible

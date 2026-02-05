@@ -1,33 +1,55 @@
 version: '3.8'
 
-# 개발 서버에 DB와 Redis가 이미 구축되어 있으므로
-# 이 파일은 참고용으로만 남겨둡니다.
-# 실제 서비스는 외부 DB와 Redis를 사용합니다.
+services:
+  game-server:
+    image: tiny-breakers-game:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tiny-breakers-game-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - tiny_breakers_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-# 필요시 로컬 개발 환경 구축을 위해 아래 주석을 해제하여 사용할 수 있습니다.
-#
-# services:
-#   redis:
-#     image: redis:7-alpine
-#     container_name: tiny_breakers_redis
-#     ports:
-#       - "6379:6379"
-#     volumes:
-#       - redis_data:/data
-#     command: >
-#       redis-server
-#       --requirepass ${REDIS_PASSWORD:-tiny_breakers_redis_password}
-#       --appendonly yes
-#     restart: unless-stopped
-#     networks:
-#       - tiny_breakers_network
-#
-#   postgres:
-#     image: postgres:15-alpine
-#     container_name: tiny_breakers_postgres
-#     environment:
-#       POSTGRES_USER: ${DB_USER:-postgres}
-#       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+  batch-server:
+    image: tiny-breakers-batch:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.batch
+    container_name: tiny-breakers-batch-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - tiny_breakers_network
+    depends_on:
+      - game-server
+
+networks:
+  tiny_breakers_network:
+    driver: bridge
+
+# Environment variables reference:
+# DATABASE_URL: 데이터베이스 연결 URL
+# REDIS_URL: Redis 연결 URL
+# JWT_SECRET: JWT 서명용 비밀키
+# API_KEY: 외부 API 키
 #       POSTGRES_DB: ${DB_NAME:-tiny_breakers_db}
 #     ports:
 #       - "5432:5432"
