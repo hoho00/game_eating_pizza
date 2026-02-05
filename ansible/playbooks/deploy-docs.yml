@@ -1,56 +1,56 @@
----
-# 문서 자동 배포 Playbook
-- name: Deploy Documentation to Web Server
-  hosts: localhost
-  gather_facts: yes
+# ---
+# # 문서 자동 배포 Playbook
+# - name: Deploy Documentation to Web Server
+#   hosts: localhost
+#   gather_facts: yes
   
-  vars:
-    docs_user: ki
-    docs_source_path: ../docs
-    docs_web_path: /var/www/docs
+#   vars:
+#     docs_user: ki
+#     docs_source_path: ../docs
+#     docs_web_path: /var/www/docs
     
-  tasks:
-    - name: Copy documentation files to docs directory
-      copy:
-        src: "{{ item }}"
-        dest: "{{ docs_web_path }}/{{ item | basename }}"
-        owner: "{{ docs_user }}"
-        group: "{{ docs_user }}"
-        mode: '0644'
-      loop:
-        - "{{ docs_source_path }}/GAME_DESIGN_DOCUMENT.md"
-        - "{{ docs_source_path }}/DAILY_PLAN.md"
-        - "{{ docs_source_path }}/FUTURE_PLANNING.md"
-        - "{{ docs_source_path }}/ORM_RECOMMENDATION.md"
+#   tasks:
+#     - name: Copy documentation files to docs directory
+#       copy:
+#         src: "{{ item }}"
+#         dest: "{{ docs_web_path }}/{{ item | basename }}"
+#         owner: "{{ docs_user }}"
+#         group: "{{ docs_user }}"
+#         mode: '0644'
+#       loop:
+#         - "{{ docs_source_path }}/GAME_DESIGN_DOCUMENT.md"
+#         - "{{ docs_source_path }}/DAILY_PLAN.md"
+#         - "{{ docs_source_path }}/FUTURE_PLANNING.md"
+#         - "{{ docs_source_path }}/ORM_RECOMMENDATION.md"
 
-    - name: Create index.md from README
-      copy:
-        src: ../README.md
-        dest: "{{ docs_web_path }}/index.md"
-        owner: "{{ docs_user }}"
-        group: "{{ docs_user }}"
-        mode: '0644'
-      failed_when: false
+#     - name: Create index.md from README
+#       copy:
+#         src: ../README.md
+#         dest: "{{ docs_web_path }}/index.md"
+#         owner: "{{ docs_user }}"
+#         group: "{{ docs_user }}"
+#         mode: '0644'
+#       failed_when: false
 
-    - name: Build MkDocs site
-      command: >
-        cd {{ docs_web_path }}
-        mkdocs build
-      become_user: "{{ docs_user }}"
-      environment:
-        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+#     - name: Build MkDocs site
+#       command: >
+#         cd {{ docs_web_path }}
+#         mkdocs build
+#       become_user: "{{ docs_user }}"
+#       environment:
+#         PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
 
-    - name: Set proper permissions for web directory
-      become: yes
-      file:
-        path: "{{ docs_web_path }}"
-        owner: "{{ docs_user }}"
-        group: www-data
-        mode: '0755'
-        recurse: yes
+#     - name: Set proper permissions for web directory
+#       become: yes
+#       file:
+#         path: "{{ docs_web_path }}"
+#         owner: "{{ docs_user }}"
+#         group: www-data
+#         mode: '0755'
+#         recurse: yes
 
-    - name: Reload Nginx
-      become: yes
-      systemd:
-        name: nginx
-        state: reloaded
+#     - name: Reload Nginx
+#       become: yes
+#       systemd:
+#         name: nginx
+#         state: reloaded
