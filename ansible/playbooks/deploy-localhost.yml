@@ -34,14 +34,12 @@
       register: env_file_check
 
     - name: Stop existing containers (if any)
-      become: yes
       shell: |
         cd {{ docker_project_dir }}
         docker-compose down || true
       changed_when: false
 
     - name: Build Docker images
-      become: yes
       shell: |
         cd {{ docker_project_dir }}
         docker-compose build --no-cache
@@ -53,7 +51,6 @@
       when: docker_build_result is succeeded
 
     - name: Start containers with docker-compose
-      become: yes
       shell: |
         cd {{ docker_project_dir }}
         docker-compose up -d
@@ -67,7 +64,6 @@
       when: docker_up_result is succeeded
 
     - name: Wait for game server to be ready
-      become: yes
       shell: |
         docker ps | grep {{ docker_container_game }} | grep healthy
       retries: 10
@@ -77,7 +73,6 @@
       failed_when: false
 
     - name: Display running containers
-      become: yes
       shell: |
         docker ps --filter "name={{ app_name }}"
       register: running_containers
@@ -87,7 +82,6 @@
         msg: "{{ running_containers.stdout_lines }}"
 
     - name: Show container logs (last 20 lines)
-      become: yes
       shell: |
         echo "=== Game Server Logs ==="
         docker logs --tail 20 {{ docker_container_game }} || echo "Game server not running"
