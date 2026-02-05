@@ -116,6 +116,31 @@ func (r *MockPlayerRepository) UpdateGold(id uint, gold int64) error {
 	return nil
 }
 
+// FindAll은 플레이어 목록을 페이지네이션으로 조회합니다
+func (r *MockPlayerRepository) FindAll(limit, offset int) ([]models.Player, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	players := make([]models.Player, 0, len(r.players))
+	for _, p := range r.players {
+		players = append(players, *p)
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if offset >= len(players) {
+		return []models.Player{}, nil
+	}
+	end := offset + limit
+	if end > len(players) {
+		end = len(players)
+	}
+	return players[offset:end], nil
+}
+
 // FindTopPlayersByLevel은 레벨이 높은 상위 플레이어를 조회합니다
 func (r *MockPlayerRepository) FindTopPlayersByLevel(limit int) ([]models.Player, error) {
 	r.mu.RLock()

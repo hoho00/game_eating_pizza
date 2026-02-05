@@ -59,6 +59,23 @@ func (r *PlayerRepository) UpdateGold(id uint, gold int64) error {
 		Update("gold", gold).Error
 }
 
+// FindAll은 플레이어 목록을 페이지네이션으로 조회합니다
+func (r *PlayerRepository) FindAll(limit, offset int) ([]models.Player, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	var players []models.Player
+	err := r.db.
+		Order("id ASC").
+		Limit(limit).
+		Offset(offset).
+		Find(&players).Error
+	return players, err
+}
+
 // FindTopPlayersByLevel은 레벨이 높은 상위 플레이어를 조회합니다
 func (r *PlayerRepository) FindTopPlayersByLevel(limit int) ([]models.Player, error) {
 	var players []models.Player

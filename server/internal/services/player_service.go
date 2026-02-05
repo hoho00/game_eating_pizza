@@ -32,6 +32,21 @@ func (s *PlayerService) GetTopPlayersByLevel(limit int) ([]models.Player, error)
 	return s.playerRepo.FindTopPlayersByLevel(limit)
 }
 
+// GetAllPlayers는 플레이어 목록을 페이지네이션으로 조회합니다
+func (s *PlayerService) GetAllPlayers(limit, offset int) ([]models.Player, error) {
+	return s.playerRepo.FindAll(limit, offset)
+}
+
+// UpdatePlayer는 플레이어 정보를 수정합니다
+func (s *PlayerService) UpdatePlayer(player *models.Player) error {
+	return s.playerRepo.Update(player)
+}
+
+// DeletePlayer는 플레이어를 삭제합니다 (소프트 삭제)
+func (s *PlayerService) DeletePlayer(id uint) error {
+	return s.playerRepo.Delete(id)
+}
+
 // CreatePlayer는 새로운 플레이어를 생성하고 기본 무기를 제공합니다
 func (s *PlayerService) CreatePlayer(username string) (*models.Player, error) {
 	player := &models.Player{

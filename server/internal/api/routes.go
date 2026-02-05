@@ -73,9 +73,12 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			// 플레이어 관련
 			players := authenticated.Group("/players")
 			{
+				players.GET("", playerHandler.GetPlayers)
 				players.GET("/me", playerHandler.GetMe)
-				players.PUT("/me", playerHandler.UpdateMe)
 				players.GET("/leaderboard", playerHandler.GetLeaderboard)
+				players.GET("/:id", playerHandler.GetPlayer)
+				players.PUT("/me", playerHandler.UpdateMe)
+				players.DELETE("/:id", playerHandler.DeletePlayer)
 			}
 
 			// 무기 관련

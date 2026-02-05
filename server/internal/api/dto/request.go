@@ -28,15 +28,28 @@ type GetMeRequest struct {
 
 // UpdateMeRequest는 내 정보 수정 요청 DTO입니다
 type UpdateMeRequest struct {
-	PlayerID   uint   // 인증 컨텍스트에서 설정
-	Level      *int   `json:"level,omitempty"`
-	Experience *int64 `json:"experience,omitempty"`
-	Gold       *int64 `json:"gold,omitempty"`
+	PlayerID   uint    // 인증 컨텍스트에서 설정
+	Level      *int    `json:"level,omitempty"`
+	Experience *int64  `json:"experience,omitempty"`
+	Gold       *int64  `json:"gold,omitempty"`
+	MaxDistance *float64 `json:"max_distance,omitempty"`
+	TotalKills  *int    `json:"total_kills,omitempty"`
 }
 
 // GetLeaderboardRequest는 리더보드 조회 요청 DTO입니다
 type GetLeaderboardRequest struct {
 	Limit int `form:"limit"` // 기본값 10, 쿼리 파라미터
+}
+
+// GetPlayersRequest는 플레이어 목록 조회 요청 DTO입니다
+type GetPlayersRequest struct {
+	Limit  int `form:"limit"`  // 기본값 10
+	Offset int `form:"offset"` // 기본값 0
+}
+
+// PlayerIDPathRequest는 경로 파라미터 id를 바인딩합니다 (players/:id)
+type PlayerIDPathRequest struct {
+	ID uint `uri:"id" binding:"required"`
 }
 
 // ----- Weapon -----

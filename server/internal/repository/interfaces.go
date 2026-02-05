@@ -12,6 +12,7 @@ type PlayerRepositoryInterface interface {
 	FindByUsername(username string) (*models.Player, error)
 	Update(player *models.Player) error
 	UpdateGold(id uint, gold int64) error
+	FindAll(limit, offset int) ([]models.Player, error)
 	FindTopPlayersByLevel(limit int) ([]models.Player, error)
 	FindTopPlayersByGold(limit int) ([]models.Player, error)
 	ExistsByUsername(username string) (bool, error)
