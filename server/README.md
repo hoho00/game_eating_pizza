@@ -93,7 +93,7 @@ go build -o bin/server cmd/server/main.go
 
 서버가 `http://localhost:8080`에서 실행됩니다.
 
-**참고**: 개발 서버에 구축된 DB와 Redis를 사용하므로, 로컬에서 Docker Compose를 실행할 필요가 없습니다. 로컬 개발 환경이 필요한 경우 `docker-compose.yml` 파일의 주석을 참고하세요.
+**참고**: 개발 서버에 구축된 DB를 사용하므로, 로컬에서 Docker Compose를 실행할 필요가 없습니다. 로컬 개발 환경이 필요한 경우 `docker-compose.yml` 파일의 주석을 참고하세요.
 
 ## Swagger API 문서
 

@@ -36,13 +36,13 @@
     - name: Stop existing containers (if any)
       shell: |
         cd {{ docker_project_dir }}
-        docker-compose down || true
+        docker compose down || true
       changed_when: false
 
     - name: Build Docker images
       shell: |
         cd {{ docker_project_dir }}
-        docker-compose build --no-cache
+        docker compose build --no-cache
       register: docker_build_result
 
     - name: Display build result
@@ -53,7 +53,7 @@
     - name: Start containers with docker-compose
       shell: |
         cd {{ docker_project_dir }}
-        docker-compose up -d
+        docker compose up -d
       environment:
         COMPOSE_FILE: "{{ docker_project_dir }}/docker-compose.yml"
       register: docker_up_result
@@ -105,6 +105,6 @@
           
           Useful commands:
           - View logs: docker logs -f {{ docker_container_game }}
-          - Stop containers: docker-compose -f {{ docker_project_dir }}/docker-compose.yml down
-          - Restart containers: docker-compose -f {{ docker_project_dir }}/docker-compose.yml restart
+          - Stop containers: docker compose -f {{ docker_project_dir }}/docker-compose.yml down
+          - Restart containers: docker compose -f {{ docker_project_dir }}/docker-compose.yml restart
           - View running containers: docker ps --filter "name={{ app_name }}"

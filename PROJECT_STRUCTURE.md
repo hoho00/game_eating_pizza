@@ -94,7 +94,7 @@ tiny_breakers/ (또는 game_eating_pizza/)
 │   │   └── logger/
 │   │       └── logger.go
 │   ├── migrations/                # DB 마이그레이션
-│   ├── docker-compose.yml         # Redis, PostgreSQL 설정 (데이터 지속성 포함)
+│   ├── docker-compose.yml         # Docker Compose로 관리되는 PostgreSQL 설정 (데이터 지속성 포함)
 │   ├── Dockerfile
 │   ├── .env.example               # 환경 변수 예시
 │   ├── go.mod

@@ -25,7 +25,7 @@ cp .env.example .env
 ki 사용자가 docker 명령어를 sudo 없이 실행할 수 있도록 권한을 설정합니다.
 
 **필요한 이유:**
-- Ansible playbook이 docker-compose 명령어를 실행할 때 비밀번호 입력 없이 실행
+- Ansible playbook이 docker compose 명령어를 실행할 때 비밀번호 입력 없이 실행
 - CI/CD 자동화를 위한 필수 설정
 
 **실행:**
@@ -58,7 +58,7 @@ Self-hosted runner 환경 초기 설정 순서:
    ```bash
    # Ubuntu/Debian의 경우
    sudo apt-get update
-   sudo apt-get install -y docker.io docker-compose
+   sudo apt-get install -y docker.io
    sudo systemctl start docker
    sudo systemctl enable docker
    ```
@@ -92,9 +92,9 @@ ansible-playbook playbooks/deploy.yml -i inventory/localhost.yml
 # Docker 권한 확인
 docker ps
 
-# Docker-compose 확인
+# Docker Compose 확인
 cd /home/ki/src/game/server
-docker-compose ps
+docker compose ps
 ```
 
 ## 🐛 문제 해결
@@ -119,7 +119,7 @@ docker ps
 which docker
 
 # Docker 설치
-sudo apt-get install -y docker.io docker-compose
+sudo apt-get install -y docker.io
 
 # Docker 데몬 시작
 sudo systemctl start docker

@@ -2,7 +2,7 @@
 
 ## 📋 개요
 
-이 프로젝트는 이제 Docker와 docker-compose를 사용하여 배포됩니다.
+이 프로젝트는 이제 Docker와 Docker Compose를 사용하여 배포됩니다.
 
 ## 🏗️ 아키텍처
 
@@ -19,7 +19,7 @@
 ┌─────────────────────────────────────────┐
 │      Ansible (deploy.yml)               │
 ├─────────────────────────────────────────┤
-│ 1. Check docker-compose.yml             │
+│ 1. Check docker-compose.yml files       │
 │ 2. Stop existing containers             │
 │ 3. Build Docker images                  │
 │ 4. Start containers                     │
@@ -83,9 +83,9 @@ services:
 
 ```bash
 cd /home/ki/src/game/server
-docker-compose down        # 기존 컨테이너 종료
-docker-compose build       # 이미지 빌드
-docker-compose up -d       # 컨테이너 시작
+docker compose down        # 기존 컨테이너 종료
+docker compose build       # 이미지 빌드
+docker compose up -d       # 컨테이너 시작
 ```
 
 ### 3. 수동 배포
@@ -95,13 +95,13 @@ docker-compose up -d       # 컨테이너 시작
 cd /home/ki/src/game/server
 
 # 컨테이너 빌드 및 시작
-docker-compose up -d
+docker compose up -d
 
 # 로그 확인
-docker-compose logs -f game-server
+docker compose logs -f game-server
 
 # 컨테이너 중지
-docker-compose down
+docker compose down
 ```
 
 ## 🔍 모니터링 및 관리
@@ -130,13 +130,13 @@ docker exec -it tiny-breakers-game-server /bin/sh
 
 ### 컨테이너 재시작
 ```bash
-docker-compose -f /home/ki/src/game/server/docker-compose.yml restart
+docker compose -f /home/ki/src/game/server/docker-compose.yml restart
 ```
 
 ### 완전 재배포
 ```bash
-docker-compose -f /home/ki/src/game/server/docker-compose.yml down -v
-docker-compose -f /home/ki/src/game/server/docker-compose.yml up -d --build
+docker compose -f /home/ki/src/game/server/docker-compose.yml down -v
+docker compose -f /home/ki/src/game/server/docker-compose.yml up -d --build
 ```
 
 ## 📝 환경 변수 설정
@@ -160,7 +160,7 @@ ls -la /home/ki/src/game/server/go.mod
 
 # 수동으로 빌드 재시도
 cd /home/ki/src/game/server
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ### 컨테이너 실행 실패
@@ -181,8 +181,8 @@ docker ps -a | grep tiny-breakers
 netstat -tlnp | grep 8080
 
 # 기존 프로세스 종료 후 재배포
-docker-compose down
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
 
 ## 📚 관련 파일
