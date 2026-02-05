@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/params"
 	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/services"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,32 +33,19 @@ func NewWeaponHandler(weaponService *services.WeaponService) *WeaponHandler {
 // @Failure      500      {object}  map[string]interface{}  "서버 오류"
 // @Router       /weapons [get]
 func (h *WeaponHandler) GetWeapons(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
+	req := dto.GetWeaponsRequest{PlayerID: playerID}
 
-	// TODO: userID를 uint로 변환하는 로직 필요
-	playerID, err := strconv.ParseUint(userID.(string), 10, 32)
+	weapons, err := h.weaponService.GetWeaponsByPlayerID(req.PlayerID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get weapons"})
 		return
 	}
 
-	weapons, err := h.weaponService.GetWeaponsByPlayerID(uint(playerID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get weapons",
-		})
-		return
-	}
-
-	// DTO로 변환
 	responses := make([]dto.WeaponResponse, len(weapons))
 	for i, weapon := range weapons {
 		responses[i] = dto.WeaponResponse{
@@ -74,10 +61,7 @@ func (h *WeaponHandler) GetWeapons(c *gin.Context) {
 			UpdatedAt:   weapon.UpdatedAt,
 		}
 	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"weapons": responses,
-	})
+	c.JSON(http.StatusOK, gin.H{"weapons": responses})
 }
 
 // CreateWeapon 무기 생성
@@ -87,14 +71,26 @@ func (h *WeaponHandler) GetWeapons(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      201      {object}  map[string]interface{}  "무기 생성 성공"
-// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Param        body  body      dto.CreateWeaponRequest  true  "무기 생성 정보"
+// @Success      201   {object}  map[string]interface{}  "무기 생성 성공"
+// @Failure      401   {object}  map[string]interface{}  "인증 실패"
 // @Router       /weapons [post]
 func (h *WeaponHandler) CreateWeapon(c *gin.Context) {
-	// TODO: 구현 필요
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Not implemented yet",
-	})
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	var req dto.CreateWeaponRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "details": err.Error()})
+		return
+	}
+	req.PlayerID = playerID
+
+	// TODO: weaponService.CreateWeapon(req) 구현
+	_ = req
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
 }
 
 // UpgradeWeapon 무기 강화
@@ -111,25 +107,24 @@ func (h *WeaponHandler) CreateWeapon(c *gin.Context) {
 // @Failure      500  {object}  map[string]interface{}  "서버 오류"
 // @Router       /weapons/{id}/upgrade [put]
 func (h *WeaponHandler) UpgradeWeapon(c *gin.Context) {
-	weaponIDStr := c.Param("id")
-	weaponID, err := strconv.ParseUint(weaponIDStr, 10, 32)
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	var pathReq dto.WeaponIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid weapon ID"})
+		return
+	}
+	req := dto.UpgradeWeaponRequest{PlayerID: playerID, WeaponID: pathReq.ID}
+
+	weapon, err := h.weaponService.UpgradeWeapon(req.WeaponID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid weapon ID",
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade weapon", "details": err.Error()})
 		return
 	}
 
-	weapon, err := h.weaponService.UpgradeWeapon(uint(weaponID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to upgrade weapon",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	// DTO로 변환
 	response := dto.WeaponResponse{
 		ID:          weapon.ID,
 		PlayerID:    weapon.PlayerID,
@@ -142,7 +137,6 @@ func (h *WeaponHandler) UpgradeWeapon(c *gin.Context) {
 		CreatedAt:   weapon.CreatedAt,
 		UpdatedAt:   weapon.UpdatedAt,
 	}
-
 	c.JSON(http.StatusOK, response)
 }
 
@@ -160,41 +154,22 @@ func (h *WeaponHandler) UpgradeWeapon(c *gin.Context) {
 // @Failure      500  {object}  map[string]interface{}  "서버 오류"
 // @Router       /weapons/{id}/equip [put]
 func (h *WeaponHandler) EquipWeapon(c *gin.Context) {
-	weaponIDStr := c.Param("id")
-	weaponID, err := strconv.ParseUint(weaponIDStr, 10, 32)
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	var pathReq dto.WeaponIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid weapon ID"})
+		return
+	}
+	req := dto.EquipWeaponRequest{PlayerID: playerID, WeaponID: pathReq.ID}
+
+	err := h.weaponService.EquipWeapon(req.PlayerID, req.WeaponID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid weapon ID",
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to equip weapon", "details": err.Error()})
 		return
 	}
-
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
-		return
-	}
-
-	playerID, err := strconv.ParseUint(userID.(string), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
-		return
-	}
-
-	err = h.weaponService.EquipWeapon(uint(playerID), uint(weaponID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to equip weapon",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Weapon equipped successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Weapon equipped successfully"})
 }

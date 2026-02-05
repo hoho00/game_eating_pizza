@@ -2,6 +2,79 @@ package dto
 
 import "time"
 
+// ----- Auth -----
+
+// RegisterRequest는 회원가입 요청 DTO입니다
+type RegisterRequest struct {
+	Username string `json:"username" binding:"required,min=3,max=50"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+// LoginRequest는 로그인 요청 DTO입니다
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// RefreshTokenRequest는 토큰 갱신 요청 DTO입니다 (필요 시 바디 확장)
+type RefreshTokenRequest struct{}
+
+// ----- Player -----
+
+// GetMeRequest는 내 정보 조회 요청 DTO입니다 (PlayerID는 인증 컨텍스트에서 설정)
+type GetMeRequest struct {
+	PlayerID uint
+}
+
+// UpdateMeRequest는 내 정보 수정 요청 DTO입니다
+type UpdateMeRequest struct {
+	PlayerID   uint   // 인증 컨텍스트에서 설정
+	Level      *int   `json:"level,omitempty"`
+	Experience *int64 `json:"experience,omitempty"`
+	Gold       *int64 `json:"gold,omitempty"`
+}
+
+// GetLeaderboardRequest는 리더보드 조회 요청 DTO입니다
+type GetLeaderboardRequest struct {
+	Limit int `form:"limit"` // 기본값 10, 쿼리 파라미터
+}
+
+// ----- Weapon -----
+
+// GetWeaponsRequest는 무기 목록 조회 요청 DTO입니다
+type GetWeaponsRequest struct {
+	PlayerID uint
+}
+
+// CreateWeaponRequest는 무기 생성 요청 DTO입니다
+type CreateWeaponRequest struct {
+	PlayerID    uint    // 인증 컨텍스트에서 설정
+	Name        string  `json:"name" binding:"required"`
+	Type        string  `json:"type" binding:"required"` // sword, bow, staff
+	AttackPower int     `json:"attack_power"`
+	AttackSpeed float64 `json:"attack_speed"`
+	Rarity      string  `json:"rarity"` // common, rare, epic, legendary
+}
+
+// WeaponIDPathRequest는 경로 파라미터 id를 바인딩합니다 (weapons/:id)
+type WeaponIDPathRequest struct {
+	ID uint `uri:"id" binding:"required"`
+}
+
+// UpgradeWeaponRequest는 무기 강화 요청 DTO입니다
+type UpgradeWeaponRequest struct {
+	PlayerID uint // 인증 컨텍스트에서 설정
+	WeaponID uint // 경로에서 설정
+}
+
+// EquipWeaponRequest는 무기 장착 요청 DTO입니다
+type EquipWeaponRequest struct {
+	PlayerID uint
+	WeaponID uint
+}
+
+// ----- Dungeon -----
+
 // CreateDungeonRequest는 던전 생성 요청 DTO입니다
 type CreateDungeonRequest struct {
 	Name       string     `json:"name" binding:"required" example:"초급 던전"`
@@ -20,4 +93,31 @@ type UpdateDungeonRequest struct {
 	IsActive   *bool      `json:"is_active,omitempty"`
 	StartTime  *time.Time `json:"start_time,omitempty"`
 	EndTime    *time.Time `json:"end_time,omitempty"`
+}
+
+// DungeonIDPathRequest는 경로 파라미터 id를 바인딩합니다 (dungeons/:id)
+type DungeonIDPathRequest struct {
+	ID uint `uri:"id" binding:"required"`
+}
+
+// GetDungeonRequest는 던전 상세 조회 요청 DTO입니다
+type GetDungeonRequest struct {
+	DungeonID uint
+}
+
+// DeleteDungeonRequest는 던전 삭제 요청 DTO입니다
+type DeleteDungeonRequest struct {
+	DungeonID uint
+}
+
+// EnterDungeonRequest는 던전 입장 요청 DTO입니다
+type EnterDungeonRequest struct {
+	PlayerID  uint
+	DungeonID uint
+}
+
+// ClearDungeonRequest는 던전 클리어 요청 DTO입니다
+type ClearDungeonRequest struct {
+	PlayerID  uint
+	DungeonID uint
 }

@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -42,10 +43,41 @@ type Config struct {
 
 var AppConfig *Config
 
+// loadEnvFiles는 현재 디렉터리부터 상위로 .env, .env.local을 찾아 로드합니다.
+// server/cmd/server에서 go run main.go 해도 server/.env, server/.env.local이 적용됩니다.
+func loadEnvFiles() {
+	cwd, _ := os.Getwd()
+	dirs := []string{cwd}
+	for d := cwd; ; {
+		parent := filepath.Dir(d)
+		if parent == d {
+			break
+		}
+		dirs = append(dirs, parent)
+		d = parent
+	}
+	for _, dir := range dirs {
+		envPath := filepath.Join(dir, ".env")
+		if _, err := os.Stat(envPath); err != nil {
+			continue
+		}
+		_ = godotenv.Load(envPath)
+		localPath := filepath.Join(dir, ".env.local")
+		if _, err := os.Stat(localPath); err == nil {
+			_ = godotenv.Load(localPath)
+		}
+		return
+	}
+	// fallback: 기본 경로 시도
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load(".env.local")
+}
+
 // LoadConfig는 환경 변수에서 설정을 로드합니다
 func LoadConfig() (*Config, error) {
-	// .env 파일 로드 (파일이 없어도 에러 무시)
-	_ = godotenv.Load()
+	// 실행 위치(working dir)에 따라 .env가 없는 경우 상위 디렉터리에서 찾아 로드
+	// (예: server/cmd/server에서 go run main.go 해도 server/.env, server/.env.local 적용)
+	loadEnvFiles()
 
 	config := &Config{
 		ServerPort: getEnv("SERVER_PORT", "8080"),

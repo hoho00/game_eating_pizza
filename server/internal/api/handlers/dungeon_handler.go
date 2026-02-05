@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/params"
 	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/models"
 	"game_eating_pizza/internal/services"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -172,42 +172,41 @@ func (h *DungeonHandler) CreateDungeon(c *gin.Context) {
 // @Failure      500   {object}  map[string]interface{}  "서버 오류"
 // @Router       /dungeons/{id} [put]
 func (h *DungeonHandler) UpdateDungeon(c *gin.Context) {
-	dungeonIDStr := c.Param("id")
-	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
-	if err != nil {
+	var pathReq dto.DungeonIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
 		return
 	}
 
-	dungeon, err := h.dungeonService.GetDungeonByID(uint(dungeonID))
+	dungeon, err := h.dungeonService.GetDungeonByID(pathReq.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Dungeon not found"})
 		return
 	}
 
-	var req dto.UpdateDungeonRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var bodyReq dto.UpdateDungeonRequest
+	if err := c.ShouldBindJSON(&bodyReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
 		return
 	}
 
-	if req.Name != nil {
-		dungeon.Name = *req.Name
+	if bodyReq.Name != nil {
+		dungeon.Name = *bodyReq.Name
 	}
-	if req.Type != nil {
-		dungeon.Type = *req.Type
+	if bodyReq.Type != nil {
+		dungeon.Type = *bodyReq.Type
 	}
-	if req.Difficulty != nil {
-		dungeon.Difficulty = *req.Difficulty
+	if bodyReq.Difficulty != nil {
+		dungeon.Difficulty = *bodyReq.Difficulty
 	}
-	if req.IsActive != nil {
-		dungeon.IsActive = *req.IsActive
+	if bodyReq.IsActive != nil {
+		dungeon.IsActive = *bodyReq.IsActive
 	}
-	if req.StartTime != nil {
-		dungeon.StartTime = req.StartTime
+	if bodyReq.StartTime != nil {
+		dungeon.StartTime = bodyReq.StartTime
 	}
-	if req.EndTime != nil {
-		dungeon.EndTime = req.EndTime
+	if bodyReq.EndTime != nil {
+		dungeon.EndTime = bodyReq.EndTime
 	}
 
 	if err := h.dungeonService.UpdateDungeon(dungeon); err != nil {
@@ -244,19 +243,19 @@ func (h *DungeonHandler) UpdateDungeon(c *gin.Context) {
 // @Failure      500  {object}  map[string]interface{}  "서버 오류"
 // @Router       /dungeons/{id} [delete]
 func (h *DungeonHandler) DeleteDungeon(c *gin.Context) {
-	dungeonIDStr := c.Param("id")
-	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
-	if err != nil {
+	var pathReq dto.DungeonIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
 		return
 	}
+	req := dto.DeleteDungeonRequest{DungeonID: pathReq.ID}
 
-	if _, err := h.dungeonService.GetDungeonByID(uint(dungeonID)); err != nil {
+	if _, err := h.dungeonService.GetDungeonByID(req.DungeonID); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Dungeon not found"})
 		return
 	}
 
-	if err := h.dungeonService.DeleteDungeon(uint(dungeonID)); err != nil {
+	if err := h.dungeonService.DeleteDungeon(req.DungeonID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete dungeon"})
 		return
 	}
@@ -278,24 +277,19 @@ func (h *DungeonHandler) DeleteDungeon(c *gin.Context) {
 // @Failure      404  {object}  map[string]interface{}  "던전을 찾을 수 없음"
 // @Router       /dungeons/{id} [get]
 func (h *DungeonHandler) GetDungeon(c *gin.Context) {
-	dungeonIDStr := c.Param("id")
-	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
+	var pathReq dto.DungeonIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
+		return
+	}
+	req := dto.GetDungeonRequest{DungeonID: pathReq.ID}
+
+	dungeon, err := h.dungeonService.GetDungeonByID(req.DungeonID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid dungeon ID",
-		})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Dungeon not found"})
 		return
 	}
 
-	dungeon, err := h.dungeonService.GetDungeonByID(uint(dungeonID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Dungeon not found",
-		})
-		return
-	}
-
-	// DTO로 변환
 	response := dto.DungeonResponse{
 		ID:         dungeon.ID,
 		Name:       dungeon.Name,
@@ -307,7 +301,6 @@ func (h *DungeonHandler) GetDungeon(c *gin.Context) {
 		CreatedAt:  dungeon.CreatedAt,
 		UpdatedAt:  dungeon.UpdatedAt,
 	}
-
 	c.JSON(http.StatusOK, response)
 }
 
@@ -325,43 +318,23 @@ func (h *DungeonHandler) GetDungeon(c *gin.Context) {
 // @Failure      500  {object}  map[string]interface{}  "서버 오류"
 // @Router       /dungeons/{id}/enter [post]
 func (h *DungeonHandler) EnterDungeon(c *gin.Context) {
-	dungeonIDStr := c.Param("id")
-	dungeonID, err := strconv.ParseUint(dungeonIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid dungeon ID",
-		})
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
+	var pathReq dto.DungeonIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
 		return
 	}
+	req := dto.EnterDungeonRequest{PlayerID: playerID, DungeonID: pathReq.ID}
 
-	playerID, err := strconv.ParseUint(userID.(string), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
+	if err := h.dungeonService.EnterDungeon(req.PlayerID, req.DungeonID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to enter dungeon", "details": err.Error()})
 		return
 	}
-
-	err = h.dungeonService.EnterDungeon(uint(playerID), uint(dungeonID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to enter dungeon",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Entered dungeon successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Entered dungeon successfully"})
 }
 
 // ClearDungeon 던전 클리어
@@ -377,8 +350,19 @@ func (h *DungeonHandler) EnterDungeon(c *gin.Context) {
 // @Failure      401  {object}  map[string]interface{}  "인증 실패"
 // @Router       /dungeons/{id}/clear [post]
 func (h *DungeonHandler) ClearDungeon(c *gin.Context) {
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	var pathReq dto.DungeonIDPathRequest
+	if err := c.ShouldBindUri(&pathReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dungeon ID"})
+		return
+	}
+	req := dto.ClearDungeonRequest{PlayerID: playerID, DungeonID: pathReq.ID}
+
 	// TODO: 구현 필요
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Not implemented yet",
-	})
+	_ = req
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/services"
 	"net/http"
 
@@ -19,44 +20,31 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 	}
 }
 
-// RegisterRequest는 회원가입 요청 구조체입니다
-type RegisterRequest struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,min=6"`
-}
-
-// LoginRequest는 로그인 요청 구조체입니다
-type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 // Register 회원가입
 // @Summary      회원가입
 // @Description  새로운 플레이어를 등록합니다
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      RegisterRequest  true  "회원가입 정보"
+// @Param        request  body      dto.RegisterRequest  true  "회원가입 정보"
 // @Success      201      {object}  map[string]interface{}  "회원가입 성공"
 // @Failure      400      {object}  map[string]interface{}  "잘못된 요청"
 // @Failure      500      {object}  map[string]interface{}  "서버 오류"
 // @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
-	var req RegisterRequest
+	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request",
+			"error":   "Invalid request",
 			"details": err.Error(),
 		})
 		return
 	}
 
-	// TODO: AuthService.Register 구현 필요
 	player, err := h.authService.Register(req.Username, req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to register",
+			"error":   "Failed to register",
 			"details": err.Error(),
 		})
 		return
@@ -64,7 +52,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User registered successfully",
-		"player": player,
+		"player":  player,
 	})
 }
 
@@ -74,33 +62,32 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      LoginRequest  true  "로그인 정보"
+// @Param        request  body      dto.LoginRequest  true  "로그인 정보"
 // @Success      200      {object}  map[string]interface{}  "로그인 성공"
 // @Failure      400      {object}  map[string]interface{}  "잘못된 요청"
 // @Failure      401      {object}  map[string]interface{}  "인증 실패"
 // @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req LoginRequest
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request",
+			"error":   "Invalid request",
 			"details": err.Error(),
 		})
 		return
 	}
 
-	// TODO: AuthService.Login 구현 필요
 	token, player, err := h.authService.Login(req.Username, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid credentials",
+			"error":   "Invalid credentials",
 			"details": err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
+		"token":  token,
 		"player": player,
 	})
 }
@@ -111,11 +98,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
+// @Param        request  body      dto.RefreshTokenRequest  false  "토큰 갱신 (바디 없음)"
 // @Success      200      {object}  map[string]interface{}  "토큰 갱신 성공"
 // @Failure      401      {object}  map[string]interface{}  "인증 실패"
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	// TODO: 토큰 갱신 로직 구현
+	// TODO: 토큰 갱신 로직 구현 (요청 파라미터: dto.RefreshTokenRequest)
 	c.JSON(http.StatusNotImplemented, gin.H{
 		"error": "Not implemented yet",
 	})

@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"game_eating_pizza/internal/api/params"
 	"game_eating_pizza/internal/api/dto"
 	"game_eating_pizza/internal/services"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,32 +33,19 @@ func NewPlayerHandler(playerService *services.PlayerService) *PlayerHandler {
 // @Failure      404      {object}  map[string]interface{}  "플레이어를 찾을 수 없음"
 // @Router       /players/me [get]
 func (h *PlayerHandler) GetMe(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
+	req := dto.GetMeRequest{PlayerID: playerID}
 
-	// TODO: userID를 uint로 변환하는 로직 필요
-	playerID, err := strconv.ParseUint(userID.(string), 10, 32)
+	player, err := h.playerService.GetPlayerByID(req.PlayerID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Player not found"})
 		return
 	}
 
-	player, err := h.playerService.GetPlayerByID(uint(playerID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Player not found",
-		})
-		return
-	}
-
-	// DTO로 변환
 	response := dto.PlayerResponse{
 		ID:          player.ID,
 		Username:    player.Username,
@@ -70,7 +57,6 @@ func (h *PlayerHandler) GetMe(c *gin.Context) {
 		CreatedAt:   player.CreatedAt,
 		UpdatedAt:   player.UpdatedAt,
 	}
-
 	c.JSON(http.StatusOK, response)
 }
 
@@ -81,14 +67,25 @@ func (h *PlayerHandler) GetMe(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200      {object}  map[string]interface{}  "수정 성공"
-// @Failure      401      {object}  map[string]interface{}  "인증 실패"
+// @Param        body  body      dto.UpdateMeRequest  false  "수정할 정보"
+// @Success      200   {object}  map[string]interface{}  "수정 성공"
+// @Failure      401   {object}  map[string]interface{}  "인증 실패"
 // @Router       /players/me [put]
 func (h *PlayerHandler) UpdateMe(c *gin.Context) {
+	playerID, ok := params.GetAuthenticatedPlayerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	req := dto.UpdateMeRequest{PlayerID: playerID}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "details": err.Error()})
+		return
+	}
+
 	// TODO: 구현 필요
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Not implemented yet",
-	})
+	_ = req
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
 }
 
 // GetLeaderboard 리더보드 조회
@@ -103,21 +100,18 @@ func (h *PlayerHandler) UpdateMe(c *gin.Context) {
 // @Failure      500     {object}  map[string]interface{}  "서버 오류"
 // @Router       /players/leaderboard [get]
 func (h *PlayerHandler) GetLeaderboard(c *gin.Context) {
-	limitStr := c.DefaultQuery("limit", "10")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		limit = 10
+	var req dto.GetLeaderboardRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		req.Limit = 10
+	}
+	if req.Limit <= 0 {
+		req.Limit = 10
 	}
 
-	players, err := h.playerService.GetTopPlayersByLevel(limit)
+	players, err := h.playerService.GetTopPlayersByLevel(req.Limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get leaderboard",
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get leaderboard"})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"players": players,
-	})
+	c.JSON(http.StatusOK, gin.H{"players": players})
 }
