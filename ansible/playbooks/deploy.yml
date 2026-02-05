@@ -1,9 +1,8 @@
 ---
-# Tiny Breakers 배포 Playbook
-# dev 브랜치에 push되면 자동으로 실행됩니다
-# GitHub Actions에서 빌드한 바이너리를 개발 서버로 전송합니다
+# Tiny Breakers 배포 Playbook (Self-hosted runner용)
+# 개발 서버에서 직접 실행되므로 localhost로 배포
 - name: Deploy Tiny Breakers to Development Server
-  hosts: dev-server
+  hosts: localhost
   become: yes
   gather_facts: yes
   

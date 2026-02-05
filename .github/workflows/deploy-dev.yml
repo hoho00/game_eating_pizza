@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-deploy:
     name: Build and Deploy to Dev Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
       - name: Checkout code
@@ -42,17 +42,10 @@ jobs:
         run: |
           pip install ansible
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 100.69.72.59 >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Deploy to development server
+      - name: Deploy to development server (localhost)
         env:
           ANSIBLE_HOST_KEY_CHECKING: False
         working-directory: ansible
         run: |
-          ansible-playbook playbooks/deploy.yml -i inventory/dev.yml
+          ansible-playbook playbooks/deploy.yml -i inventory/localhost.yml
         continue-on-error: false
